@@ -1,3 +1,6 @@
+from sqlalchemy.exc import IntegrityError
+
+
 class AppException(Exception):
     """Base class for domain/business exceptions.
 
@@ -27,3 +30,13 @@ class ConflictError(AppException):
 class UnauthorizedError(AppException):
     status_code = 401
     detail = "Not authenticated"
+
+
+# Ye errors "expected" hain — `app/main.py` ke handlers inhe theek status code
+# (404 / 409 / 422) aur standard envelope mein badal dete hain, aur khud hi
+# munasib level par log karte hain.
+#
+# Endpoint ka `try/except` inhe chhoo kar aage bhej deta hai; sirf UNEXPECTED
+# error par apna context log karta hai. Agar inhe bhi `log.exception()` karte
+# to har duplicate SKU (jo aam baat hai) error-level alert bana deta.
+HANDLED_ERRORS = (AppException, IntegrityError)

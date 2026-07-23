@@ -1,22 +1,25 @@
 """Reusable pagination helpers.
 
-Use ``PageParams`` as an endpoint dependency and ``Page`` as the response
-model so every list endpoint paginates the same way.
+``PageParams`` endpoint dependency hai aur ``paginated()` jawab banata hai —
+har list endpoint bilkul ek jaisa paginate karta hai:
 
-Example:
-
-    @router.get("", response_model=Page[UserRead])
+    @router.get("")
     async def list_users(params: PageParamsDep, service: UserServiceDep):
-        items = await service.list_users(skip=params.offset, limit=params.size)
-        total = await service.count_users()
-        return Page.create(items, total=total, params=params)
+        users, total = await service.paginate_users(
+            skip=params.offset, limit=params.size
+        )
+        items = [UserRead.model_validate(u) for u in users]
+        return paginated(items, total=total, params=params)
 """
 
 from math import ceil
-from typing import Annotated, Generic, TypeVar
+from typing import Annotated, Any, Generic, TypeVar
 
 from fastapi import Depends, Query
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+
+from app.utils.response import ok
 
 T = TypeVar("T")
 
@@ -56,3 +59,14 @@ class Page(BaseModel, Generic[T]):
             size=params.size,
             pages=ceil(total / params.size) if params.size else 0,
         )
+
+
+def paginated(
+    items: list[Any], *, total: int, params: PageParams
+) -> JSONResponse:
+    """List endpoint ka standard jawab: `data` = rows, `meta` = pagination.
+
+    Ye teen lines har list endpoint mein copy hoti thin — ab ek jagah hain.
+    """
+    page = Page.create(items, total=total, params=params)
+    return ok(items, meta=page.model_dump(exclude={"items"}))

@@ -59,7 +59,7 @@ class AuthService:
         full_name: str | None = None,
         audience: TokenAudience = "web",
     ) -> tuple[User, str, str]:
-        if await self.users.get_by_email(email) is not None:
+        if await self.users.find_by_email(email) is not None:
             raise ConflictError(f"Email {email} is already registered")
 
         business = Business(name=business_name)
@@ -91,7 +91,7 @@ class AuthService:
     async def login(
         self, *, email: str, password: str, audience: TokenAudience = "web"
     ) -> tuple[User, str, str]:
-        user = await self.users.get_by_email(email)
+        user = await self.users.find_by_email(email)
 
         # Ek hi generic message — warna attacker ko pata chal jayega ke
         # kaunsa email register hai
@@ -122,7 +122,7 @@ class AuthService:
         if payload.get("typ") != "refresh":
             raise UnauthorizedError("Not a refresh token")
 
-        user = await self.users.get(int(payload["sub"]))
+        user = await self.users.find_for_auth(int(payload["sub"]))
         if user is None or not user.is_active:
             raise UnauthorizedError("User no longer active")
 

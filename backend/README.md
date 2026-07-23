@@ -73,17 +73,55 @@ app/
 ### Multi-tenancy (sabse ahem)
 
 `TenantMiddleware` JWT se `user_id` / `business_id` nikaal kar request-scoped
-context (`app/core/tenancy.py`) mein daalti hai. Repositories har query par
-`business_id == current_business_id()` lagati hain.
+context (`app/core/tenancy.py`) mein daalti hai. Scope lagana ab repository ke
+haath mein nahi — `TenantRepository` ke **global scopes** khud lagate hain
+(Laravel ke `BelongsToTenant` + `SoftDeletes` trait jaise):
+
+```python
+class ProductRepository(TenantRepository[Product]):
+    model = Product
+# har query par: business_id = <token wali business> AND deleted_at IS NULL
+```
 
 Do qawaid jo kabhi mat todna:
 
 1. `business_id` **kabhi** request body se mat lo — hamesha `current_business_id()`.
-2. Tenant table par `BaseRepository.get()` / `.list()` mat use karo — wo generic
-   hain aur scope nahi lagate. Har repository ka `get_scoped()` / `search()` use karo.
+2. `query_without_scopes()` sirf auth ke liye (login — us waqt business context
+   hoti hi nahi). Kisi listing/search mein kabhi nahi.
 
 Scope se bahar ki row par **404** dete hain, 403 nahi — warna id ka wujood leak hota hai.
 Ye behaviour `tests/test_tenancy.py` mein locked hai.
+
+### Query builder (Eloquent style)
+
+`repo.query()` ek immutable chainable builder deta hai
+(`app/repositories/query.py`). Filter `if` ki deewar ke bajaye `.when()` se
+lagta hai, aur related table par shart JOIN se nahi — **model ke rishte se**:
+
+```python
+def filtered(self, *, q=None, category_id=None, only_active=False):
+    return (
+        self.query()                                   # + global scopes
+        .when(q, self.matches)                         # ILIKE (PG case-sensitive hai)
+        .when(category_id, self.in_category)           # Product.category.has(...)
+        .when(only_active, lambda _: Product.is_inactive.is_(False))
+        .order_by(Product.name)
+    )
+
+rows, total = await self.filtered(q="esp").paginate(skip=0, limit=20)
+```
+
+| Rishta | Query mein |
+|---|---|
+| many-to-one (`Product.category`, `User.role`) | `.has(shart)` |
+| one-to-many (`Product.variations`) | `.any(shart)` |
+
+Dono correlated `EXISTS (...)` banate hain, JOIN nahi — row duplicate nahi hoti
+is liye `count` sahi rehta hai, aur shart *related row* par lagti hai (misal:
+soft-deleted category wale products list se bahar).
+
+`paginate()` rows aur total **ek hi builder** se banata hai, is liye pagination
+ka total kabhi rows se mismatch nahi kar sakta.
 
 ### Auth aur roles
 

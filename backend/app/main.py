@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 
 from app.api.v1.router import api_router
 from app.core.config import settings
@@ -102,6 +103,32 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         for err in exc.errors()
     ]
     return error_response("Validation failed", status_code=422, errors=errors)
+
+
+@app.exception_handler(IntegrityError)
+async def integrity_error_handler(request: Request, exc: IntegrityError):
+    """DB constraint toota — 500 nahi, sahi status code.
+
+    Service pehle hi check karti hai (misal `sku_exists()`), magar do requests
+    ek hi lamhe mein aayein to check dono pass kar jate hain aur race haarne
+    wali yahan girti hai. Asal rakhwala DB ka constraint hai; ye handler usay
+    theek jawab mein badalta hai.
+
+    Raw DB message client ko **kabhi nahi** jata — usmein table/column ke naam
+    hote hain. Wo sirf log mein.
+    """
+    detail = str(getattr(exc, "orig", exc))
+    sqlstate = getattr(getattr(exc, "orig", None), "sqlstate", None)
+
+    log.warning("db.integrity_error", path=request.url.path, sqlstate=sqlstate)
+
+    # 23505 = unique_violation (PostgreSQL). SQLite par sqlstate nahi hota,
+    # is liye message par fallback (tests SQLite par chalte hain).
+    if sqlstate == "23505" or "UNIQUE constraint failed" in detail:
+        return error_response("This record already exists", status_code=409)
+
+    # baqi: foreign key / check / not-null — client ne ghalat data bheja
+    return error_response("Request violates a database constraint", status_code=422)
 
 
 @app.exception_handler(Exception)

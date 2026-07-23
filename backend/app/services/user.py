@@ -8,8 +8,6 @@ Naya business banane wala pehla (owner) user yahan se nahi, `AuthService.registe
 se banta hai.
 """
 
-from datetime import UTC, datetime
-
 from fastapi import UploadFile
 
 from app.core.exceptions import ConflictError, NotFoundError
@@ -27,17 +25,16 @@ class UserService:
 
     # --- reads ----------------------------------------------------------- #
     async def get_user(self, user_id: int) -> User:
-        user = await self.repository.get_scoped(user_id)
+        user = await self.repository.find(user_id)
         if user is None:
             # doosre business ka user bhi "not found" — uske wujood ka pata na chale
             raise NotFoundError(f"User {user_id} not found")
         return user
 
-    async def list_users(self, *, skip: int = 0, limit: int = 20, **filters) -> list[User]:
-        return await self.repository.search(skip=skip, limit=limit, **filters)
-
-    async def count_users(self, **filters) -> int:
-        return await self.repository.count_search(**filters)
+    async def paginate_users(
+        self, *, skip: int = 0, limit: int = 20, **filters
+    ) -> tuple[list[User], int]:
+        return await self.repository.paginate(skip=skip, limit=limit, **filters)
 
     # --- writes ---------------------------------------------------------- #
     async def create_user(self, data: UserCreate) -> User:
@@ -69,11 +66,23 @@ class UserService:
         return await self.repository.update(user, payload)
 
     async def set_avatar(self, user_id: int, file: UploadFile) -> User:
+        """File pehle disk par jati hai, phir DB par.
+
+        Do alag "stores" hain (disk + DB) aur unke darmiyan koi transaction
+        nahi — is liye yahan try/except zaroori hai: DB update na chale to
+        abhi likhi hui file disk par kachra ban kar reh jati.
+        """
         user = await self.get_user(user_id)
+        old_url = user.avatar_url
         new_url = await save_image(file, subdir="avatars")
 
-        old_url = user.avatar_url
-        user = await self.repository.update(user, {"avatar_url": new_url})
+        try:
+            user = await self.repository.update(user, {"avatar_url": new_url})
+        except Exception:
+            # naya file hata kar error aage bhejo — handle karna uska kaam nahi
+            delete_file(new_url)
+            raise
+
         if old_url:
             delete_file(old_url)
         return user
@@ -81,4 +90,4 @@ class UserService:
     async def delete_user(self, user_id: int) -> None:
         """Soft delete — purane records (audit, transactions) user ko refer karte hain."""
         user = await self.get_user(user_id)
-        await self.repository.update(user, {"deleted_at": datetime.now(UTC)})
+        await self.repository.soft_delete(user)

@@ -30,20 +30,19 @@ class ProductService:
     # reads
     # ----------------------------------------------------------------- #
     async def get_product(self, product_id: int) -> Product:
-        product = await self.repository.get_scoped(product_id)
+        product = await self.repository.find(product_id)
         if product is None:
             # scope se bahar ka product bhi "not found" hai — 403 mat do,
             # warna attacker ko pata chal jayega ke wo id exist karti hai
             raise NotFoundError(f"Product {product_id} not found")
         return product
 
-    async def list_products(
+    async def paginate_products(
         self, *, skip: int = 0, limit: int = 20, **filters
-    ) -> list[Product]:
-        return await self.repository.search(skip=skip, limit=limit, **filters)
-
-    async def count_products(self, **filters) -> int:
-        return await self.repository.count_search(**filters)
+    ) -> tuple[list[Product], int]:
+        """`(rows, total)` — ek hi call, dono ek hi filters se. Pehle ye do
+        alag methods thin aur endpoint ko filters do baar bhejne parte the."""
+        return await self.repository.paginate(skip=skip, limit=limit, **filters)
 
     # ----------------------------------------------------------------- #
     # writes
@@ -69,6 +68,8 @@ class ProductService:
             description=data.description,
             is_inactive=data.is_inactive,
         )
+        # relationship se — product_id haath se set nahi karte, cascade
+        # (`all, delete-orphan`) dono ko ek hi flush mein save kar deta hai
         product.variations = [
             self._build_variation(v, sku=sku, index=i)
             for i, v in enumerate(data.variations, start=1)
@@ -86,8 +87,6 @@ class ProductService:
 
     async def delete_product(self, product_id: int) -> None:
         product = await self.get_product(product_id)
-        # POS mein products kabhi hard-delete nahi hote — purani transactions
-        # unhe reference karti hain
         await self.repository.soft_delete(product)
 
     # ----------------------------------------------------------------- #

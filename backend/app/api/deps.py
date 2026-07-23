@@ -24,7 +24,7 @@ from app.core.database import get_session
 from app.core.exceptions import AppException, UnauthorizedError
 from app.core.tenancy import user_id_optional
 from app.models.user import User
-from app.repositories.business import BusinessRepository
+from app.repositories.business import BusinessRepository, LocationRepository
 from app.repositories.product import ProductRepository
 from app.repositories.user import UserRepository
 from app.services.auth import AuthService
@@ -58,7 +58,7 @@ ProductServiceDep = Annotated[ProductService, Depends(get_product_service)]
 
 
 def get_business_service(session: SessionDep) -> BusinessService:
-    return BusinessService(BusinessRepository(session))
+    return BusinessService(BusinessRepository(session), LocationRepository(session))
 
 
 BusinessServiceDep = Annotated[BusinessService, Depends(get_business_service)]
@@ -84,7 +84,7 @@ async def get_current_user(session: SessionDep) -> User:
     if user_id is None:
         raise UnauthorizedError("Not authenticated")
 
-    user = await UserRepository(session).get(user_id)
+    user = await UserRepository(session).find_for_auth(user_id)
     if user is None or not user.is_active:
         raise UnauthorizedError("Not authenticated")
     return user

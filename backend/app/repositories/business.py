@@ -1,64 +1,53 @@
-"""business repository — BaseRepository se inherit karo."""
+"""business + locations repository.
 
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
+Do repositories hain, kyunki dono ki scoping alag hai:
+
+    BusinessRepository -> Business KHUD tenant hai. Uska scope `id` par lagta
+                          hai, `business_id` par nahi — is liye `BaseRepository`
+                          par bana kar `query()` override kiya hai.
+
+    LocationRepository -> BusinessLocation aam tenant-scoped table hai, to
+                          `TenantRepository` sab kuch khud sambhal leta hai.
+"""
 
 from app.core.tenancy import current_business_id
 from app.models.business import Business, BusinessLocation
-from app.repositories.base import BaseRepository
+from app.repositories.base import BaseRepository, TenantRepository
+from app.repositories.query import QueryBuilder
 
 
 class BusinessRepository(BaseRepository[Business]):
-    def __init__(self, session: AsyncSession) -> None:
-        super().__init__(Business, session)
+    model = Business
 
-    async def get_current(self) -> Business | None:
-        """Token wali business. `locations` relationship saath hi aa jati hai
-        (model par lazy="selectin")."""
-        stmt = select(Business).where(
-            Business.id == current_business_id(),
-            Business.deleted_at.is_(None),
-        )
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
-
-    # --- locations ------------------------------------------------------ #
-    async def list_locations(self) -> list[BusinessLocation]:
-        stmt = (
-            select(BusinessLocation)
+    def query(self) -> QueryBuilder[Business]:
+        # tenant KHUD yehi row hai — token wali business ke ilawa kuch nahi
+        return (
+            super()
+            .query()
             .where(
-                BusinessLocation.business_id == current_business_id(),
-                BusinessLocation.deleted_at.is_(None),
-            )
-            .order_by(BusinessLocation.name)
-        )
-        result = await self.session.execute(stmt)
-        return list(result.scalars().all())
-
-    async def get_location(self, location_id: int) -> BusinessLocation | None:
-        stmt = select(BusinessLocation).where(
-            BusinessLocation.id == location_id,
-            BusinessLocation.business_id == current_business_id(),
-            BusinessLocation.deleted_at.is_(None),
-        )
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
-
-    async def location_name_exists(self, name: str) -> bool:
-        stmt = (
-            select(func.count())
-            .select_from(BusinessLocation)
-            .where(
-                BusinessLocation.business_id == current_business_id(),
-                BusinessLocation.name == name,
-                BusinessLocation.deleted_at.is_(None),
+                Business.id == current_business_id(),
+                Business.deleted_at.is_(None),
             )
         )
-        result = await self.session.execute(stmt)
-        return int(result.scalar_one()) > 0
 
-    async def add_location(self, location: BusinessLocation) -> BusinessLocation:
-        self.session.add(location)
-        await self.session.flush()
-        await self.session.refresh(location)
-        return location
+    async def current(self) -> Business | None:
+        """`locations` rishta model par `lazy="selectin"` hai — saath hi aa jata hai."""
+        return await self.query().first()
+
+
+class LocationRepository(TenantRepository[BusinessLocation]):
+    model = BusinessLocation
+
+    def ordered(self) -> QueryBuilder[BusinessLocation]:
+        return self.query().order_by(BusinessLocation.name)
+
+    async def all(self) -> list[BusinessLocation]:
+        return await self.ordered().get()
+
+    async def name_exists(self, name: str, *, exclude_id: int | None = None) -> bool:
+        return await (
+            self.query()
+            .where(BusinessLocation.name == name)
+            .when(exclude_id, lambda v: BusinessLocation.id != v)
+            .exists()
+        )
