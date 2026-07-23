@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: opalpos
+      POSTGRES_PASSWORD: opalpos
+      POSTGRES_DB: opalpos
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opalpos"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    env_file: ./backend/.env
+    ports: ["8000:8000"]
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    volumes:
+      - ./backend/app:/srv/app/app
+      - ./backend/uploads:/srv/app/uploads
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  worker:
+    build: ./backend
+    env_file: ./backend/.env
+    depends_on:
+      redis: {condition: service_healthy}
+      db: {condition: service_healthy}
+    command: celery -A app.tasks.celery_app worker --loglevel=info
+
+  beat:
+    build: ./backend
+    env_file: ./backend/.env
+    depends_on:
+      redis: {condition: service_healthy}
+    # Laravel ke Console/Kernel.php schedule ka replacement (daily backup waghera)
+    command: celery -A app.tasks.celery_app beat --loglevel=info
+
+  flower:
+    build: ./backend
+    env_file: ./backend/.env
+    ports: ["5555:5555"]
+    depends_on: [redis]
+    command: celery -A app.tasks.celery_app flower --port=5555
+
+  frontend:
+    build: ./frontend
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:8000"
+    ports: ["3000:3000"]
+    depends_on: [backend]
+
+volumes:
+  pgdata:

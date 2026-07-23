@@ -1,0 +1,19 @@
+# ---------- DEV / TEST / TOOLING  (Python 3.14.2 verified) ----------
+-r requirements.txt
+
+pytest>=9.1.1
+pytest-asyncio>=1.4.0
+pytest-cov>=7.1.0
+pytest-mock>=3.14.0
+httpx>=0.28.1                      # async TestClient
+faker>=40.35.0                     # fzaninotto/faker
+polyfactory>=3.3.0                 # pydantic model factories
+testcontainers[postgres]>=4.9.0    # tests real PG par — SQLite par nahi
+aiosqlite>=0.20.0                  # sirf quick local scratch DB ke liye
+
+ruff>=0.16.0                       # lint + format (black + isort + flake8 ek saath)
+mypy>=2.3.0
+pre-commit>=4.0.0
+ipython>=9.15.0                    # laravel/tinker
+rich>=15.0.0
+locust>=2.46.1                     # POS checkout endpoint load test

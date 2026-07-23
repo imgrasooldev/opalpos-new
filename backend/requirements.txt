@@ -1,0 +1,97 @@
+# ==========================================================
+# OpalPos — FastAPI backend (Web + Mobile API)
+# Python 3.14.2 | PostgreSQL
+#
+# Har version PyPI par cp314 wheel ke saath verify ki gayi hai.
+# Sab `>=` hain (upper versions allowed) — sirf ek jagah cap hai, wajah niche likhi hai.
+# ==========================================================
+
+# ---------- 1. CORE ----------
+fastapi>=0.139.2
+uvicorn[standard]>=0.51.0
+gunicorn>=26.0.0                   # prod process manager
+pydantic>=2.13.4
+pydantic-settings>=2.14.2
+python-multipart>=0.0.32           # file upload / form-data
+email-validator>=2.3.0
+orjson>=3.11.9                     # fast JSON — mobile API responses
+jinja2>=3.1.6                      # web UI templates (Blade ka replacement)
+aiofiles>=25.1.0
+
+# ---------- 2. DATABASE (PostgreSQL) ----------
+sqlalchemy[asyncio]>=2.0.51
+asyncpg>=0.31.0                    # ⚠️ 0.29.0 Python 3.14 par BUILD FAIL hota hai
+psycopg[binary]>=3.3.4             # sync driver — Alembic / scripts
+alembic>=1.18.5
+greenlet>=3.5.4                    # sqlalchemy async requirement
+
+# ---------- 3. AUTH / RBAC ----------
+pyjwt[crypto]>=2.13.0              # ⚠️ python-jose ki jagah (wo 2021 se unmaintained hai)
+bcrypt>=5.0.0                      # purane Laravel $2y$ hashes verify karne ke liye
+argon2-cffi>=25.1.0                # naye passwords
+# ⚠️ passlib[bcrypt]==1.7.4 HATA DIYA — bcrypt 5.x ke saath runtime par toot-ta hai
+itsdangerous>=2.2.0                # web session cookie
+casbin>=1.43.0                     # RBAC (spatie/laravel-permission)
+casbin-sqlalchemy-adapter>=1.4.0
+pyotp>=2.10.0                      # 2FA (optional)
+
+# ---------- 4. CACHE / QUEUE / SCHEDULER ----------
+redis>=6.4.0,<6.5                  # ⚠️ SIRF YAHI CAP: celery->kombu "redis<6.5" pin karta hai
+                                   #    (redis 8.0.1 maujood hai lekin celery use nahi kar sakta)
+cashews[redis]>=7.5.0              # fastapi-cache2 dead hai (redis<5.0.0 pin karta hai)
+celery[redis]>=5.6.3               # background jobs (Laravel Queue)
+flower>=2.0.1                      # celery dashboard
+apscheduler>=3.11.3                # cron (Console/Kernel.php schedule)
+
+# ---------- 5. API LAYER (mobile-critical) ----------
+slowapi>=0.1.10                    # rate limit / throttle
+fastapi-pagination>=0.15.15        # DataTables + mobile infinite scroll
+httpx>=0.28.1                      # outbound HTTP (gateways, webhooks)
+tenacity>=9.1.4                    # gateway timeout retry
+user-agents>=2.2.0
+python-slugify>=8.0.4
+
+# ---------- 6. REALTIME (kitchen / order screen) ----------
+websockets>=16.1.1
+broadcaster[redis]>=0.3.1          # multi-worker pub/sub fan-out
+
+# ---------- 7. MOBILE PUSH ----------
+firebase-admin>=7.5.0              # FCM -> Android + iOS
+
+# ---------- 8. FILES / MEDIA / BACKUP ----------
+pillow>=12.3.0                     # product image resize / thumbnails
+python-magic>=0.4.27               # real mime-type check on upload
+boto3>=1.43.55                     # S3 backup
+dropbox>=12.2.1                    # spatie/flysystem-dropbox
+
+# ---------- 9. DOCUMENTS ----------
+weasyprint>=69.0                   # HTML->PDF invoice (mpdf/dompdf)
+                                   # system libs chahiye: libpango-1.0-0 libpangoft2-1.0-0
+openpyxl>=3.1.5                    # xlsx read (product/stock import)
+xlsxwriter>=3.2.9                  # xlsx write (report export)
+pandas>=3.0.5                      # bulk import processing
+python-barcode>=0.16.1             # Code128 label (milon/barcode DNS1D)
+qrcode[pil]>=8.2                   # receipt QR (DNS2D)
+num2words>=0.5.14                  # invoice "amount in words"
+
+# ---------- 10. SMS / EMAIL ----------
+twilio>=9.10.9                     # aloha/twilio
+vonage>=4.8.2                      # nexmo/laravel
+fastapi-mail>=1.6.5
+
+# ---------- 11. PAYMENT GATEWAYS ----------
+stripe>=15.3.1
+razorpay>=2.0.1
+# authorizenet -- ❌ Python 3.14 par install NAHI hoga: PyXB-X + lxml==4.* pinned.
+#                 Authorize.Net ka JSON REST API httpx se direct call karo.
+# pesapal      -- koi maintained SDK nahi, httpx se custom client.
+
+# ---------- 12. LOCALIZATION / UTILS ----------
+babel>=2.18.0                      # multi-currency + date format + i18n
+phonenumbers>=9.0.34
+python-dateutil>=2.9.0
+
+# ---------- 13. OBSERVABILITY ----------
+structlog>=26.1.0                  # arcanedev/log-viewer replacement
+sentry-sdk[fastapi]>=2.66.1
+prometheus-fastapi-instrumentator>=8.0.2

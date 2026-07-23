@@ -1,0 +1,57 @@
+[project]
+name = "opalpos-api"
+version = "0.1.0"
+description = "OpalPos — FastAPI backend (web + mobile API)"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["alembic/versions", "app/templates"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",    # pycodestyle
+    "F",         # pyflakes
+    "I",         # isort
+    "N",         # pep8-naming
+    "UP",        # pyupgrade
+    "B",         # bugbear
+    "C4",        # comprehensions
+    "SIM",       # simplify
+    "RUF",       # ruff-specific
+    "ASYNC",     # async gotchas — blocking calls in async def
+]
+ignore = [
+    "B008",      # FastAPI Depends() in defaults is the documented pattern
+    "N805",      # pydantic validators use `cls`
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+"app/models/*" = ["RUF012"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+warn_unused_configs = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+exclude = ["alembic/versions"]
+
+[[tool.mypy.overrides]]
+module = ["tests.*", "alembic.*"]
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "integration: needs a real Postgres/Redis (testcontainers)",
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/templates/*", "*/__init__.py"]

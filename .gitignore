@@ -1,4 +1,4 @@
-# Python
+# ===== Python / backend =====
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -11,22 +11,37 @@ dist/
 venv/
 env/
 
-# Env / secrets
-.env
+# Test / coverage / tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
 
-# Database
+# ===== Node / frontend =====
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ===== Env / secrets =====
+.env
+.env.local
+.env.*.local
+
+# ===== Database =====
 *.db
 *.sqlite3
 
-# Uploaded files
+# ===== Uploaded files =====
 uploads/
 
-# IDE / OS
+# ===== IDE / OS =====
 .idea/
 .vscode/
 .DS_Store
-
-# Test / coverage
-.pytest_cache/
-.coverage
-htmlcov/
