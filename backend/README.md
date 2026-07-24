@@ -73,55 +73,51 @@ app/
 ### Multi-tenancy (sabse ahem)
 
 `TenantMiddleware` JWT se `user_id` / `business_id` nikaal kar request-scoped
-context (`app/core/tenancy.py`) mein daalti hai. Scope lagana ab repository ke
-haath mein nahi — `TenantRepository` ke **global scopes** khud lagate hain
-(Laravel ke `BelongsToTenant` + `SoftDeletes` trait jaise):
+context (`app/core/tenancy.py`) mein daalti hai. Har repository ke `_conditions()`
+ki pehli do lines tenant scope lagati hain, aur `get()/list()/count()` teeno wahi
+list use karte hain:
 
 ```python
-class ProductRepository(TenantRepository[Product]):
-    model = Product
-# har query par: business_id = <token wali business> AND deleted_at IS NULL
+def _conditions(self, *, q=None, ...):
+    conditions = [
+        Product.business_id == current_business_id(),   # tenant
+        Product.deleted_at.is_(None),                    # soft delete
+    ]
+    ...
+    return conditions
 ```
 
 Do qawaid jo kabhi mat todna:
 
 1. `business_id` **kabhi** request body se mat lo — hamesha `current_business_id()`.
-2. `query_without_scopes()` sirf auth ke liye (login — us waqt business context
-   hoti hi nahi). Kisi listing/search mein kabhi nahi.
+2. Unscoped reads sirf auth ke liye hain (`get_by_email` / `get_for_auth` —
+   login ke waqt business context hoti hi nahi). Listing/search mein kabhi nahi.
 
 Scope se bahar ki row par **404** dete hain, 403 nahi — warna id ka wujood leak hota hai.
 Ye behaviour `tests/test_tenancy.py` mein locked hai.
 
-### Query builder (Eloquent style)
+### Related table par filter — relation se, JOIN se nahi
 
-`repo.query()` ek immutable chainable builder deta hai
-(`app/repositories/query.py`). Filter `if` ki deewar ke bajaye `.when()` se
-lagta hai, aur related table par shart JOIN se nahi — **model ke rishte se**:
-
-```python
-def filtered(self, *, q=None, category_id=None, only_active=False):
-    return (
-        self.query()                                   # + global scopes
-        .when(q, self.matches)                         # ILIKE (PG case-sensitive hai)
-        .when(category_id, self.in_category)           # Product.category.has(...)
-        .when(only_active, lambda _: Product.is_inactive.is_(False))
-        .order_by(Product.name)
-    )
-
-rows, total = await self.filtered(q="esp").paginate(skip=0, limit=20)
-```
+Jab shart doosri table par ho to `join` haath se mat likho — model ka rishta
+use karo (`app/models/product.py`):
 
 | Rishta | Query mein |
 |---|---|
-| many-to-one (`Product.category`, `User.role`) | `.has(shart)` |
+| many-to-one (`Product.category`, `Product.brand`, `User.role`) | `.has(shart)` |
 | one-to-many (`Product.variations`) | `.any(shart)` |
+
+```python
+# category ke NAAM se search, aur soft-deleted category chhorh do
+Product.category.has(
+    and_(Category.name.ilike(pattern), Category.deleted_at.is_(None))
+)
+```
 
 Dono correlated `EXISTS (...)` banate hain, JOIN nahi — row duplicate nahi hoti
 is liye `count` sahi rehta hai, aur shart *related row* par lagti hai (misal:
-soft-deleted category wale products list se bahar).
-
-`paginate()` rows aur total **ek hi builder** se banata hai, is liye pagination
-ka total kabhi rows se mismatch nahi kar sakta.
+soft-deleted category wale products list se bahar). `list()` aur `count()` ek hi
+`_conditions()` use karte hain, is liye pagination ka total rows se kabhi
+mismatch nahi karta.
 
 ### Auth aur roles
 

@@ -84,7 +84,7 @@ async def get_current_user(session: SessionDep) -> User:
     if user_id is None:
         raise UnauthorizedError("Not authenticated")
 
-    user = await UserRepository(session).find_for_auth(user_id)
+    user = await UserRepository(session).get_for_auth(user_id)
     if user is None or not user.is_active:
         raise UnauthorizedError("Not authenticated")
     return user

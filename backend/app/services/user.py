@@ -25,7 +25,7 @@ class UserService:
 
     # --- reads ----------------------------------------------------------- #
     async def get_user(self, user_id: int) -> User:
-        user = await self.repository.find(user_id)
+        user = await self.repository.get(user_id)
         if user is None:
             # doosre business ka user bhi "not found" — uske wujood ka pata na chale
             raise NotFoundError(f"User {user_id} not found")
@@ -34,7 +34,9 @@ class UserService:
     async def paginate_users(
         self, *, skip: int = 0, limit: int = 20, **filters
     ) -> tuple[list[User], int]:
-        return await self.repository.paginate(skip=skip, limit=limit, **filters)
+        items = await self.repository.list(skip=skip, limit=limit, **filters)
+        total = await self.repository.count(**filters)
+        return items, total
 
     # --- writes ---------------------------------------------------------- #
     async def create_user(self, data: UserCreate) -> User:

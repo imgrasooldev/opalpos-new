@@ -30,7 +30,7 @@ class ProductService:
     # reads
     # ----------------------------------------------------------------- #
     async def get_product(self, product_id: int) -> Product:
-        product = await self.repository.find(product_id)
+        product = await self.repository.get(product_id)
         if product is None:
             # scope se bahar ka product bhi "not found" hai — 403 mat do,
             # warna attacker ko pata chal jayega ke wo id exist karti hai
@@ -40,9 +40,10 @@ class ProductService:
     async def paginate_products(
         self, *, skip: int = 0, limit: int = 20, **filters
     ) -> tuple[list[Product], int]:
-        """`(rows, total)` — ek hi call, dono ek hi filters se. Pehle ye do
-        alag methods thin aur endpoint ko filters do baar bhejne parte the."""
-        return await self.repository.paginate(skip=skip, limit=limit, **filters)
+        """`(rows, total)` — dono ek hi filters se, is liye kabhi mismatch nahi."""
+        items = await self.repository.list(skip=skip, limit=limit, **filters)
+        total = await self.repository.count(**filters)
+        return items, total
 
     # ----------------------------------------------------------------- #
     # writes

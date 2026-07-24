@@ -31,7 +31,7 @@ class BusinessService:
         return await self.locations.all()
 
     async def get_location(self, location_id: int) -> BusinessLocation:
-        location = await self.locations.find(location_id)
+        location = await self.locations.get(location_id)
         if location is None:
             raise NotFoundError(f"Location {location_id} not found")
         return location

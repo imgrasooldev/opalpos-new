@@ -4,15 +4,12 @@ Business hamesha token se aati hai (`bid` claim), URL se nahi — isliye yahan
 koi `{business_id}` path param nahi hai. Ye tenant leak rokne ka sabse aasan
 tareeqa hai: client business choose hi nahi kar sakta.
 
-Error handling ka dhaancha `endpoints/products.py` ke docstring mein samjhaya
-gaya hai (reference slice).
+Errors global handlers sambhalte hain (dekho `endpoints/products.py`).
 """
 
 from fastapi import APIRouter, Response
 
 from app.api.deps import BusinessServiceDep, require_permission
-from app.core.exceptions import HANDLED_ERRORS
-from app.core.logging import get_logger
 from app.schemas.business import (
     BusinessRead,
     BusinessUpdate,
@@ -23,7 +20,6 @@ from app.schemas.business import (
 from app.utils.response import ApiResponse, created, ok
 
 router = APIRouter(prefix="/business", tags=["business"])
-log = get_logger("api.business")
 
 
 @router.get(
@@ -33,14 +29,7 @@ log = get_logger("api.business")
 )
 async def get_business(service: BusinessServiceDep) -> Response:
     """Business + uski locations (relationship nested aati hai)."""
-    try:
-        business = await service.get_current()
-    except HANDLED_ERRORS:
-        raise
-    except Exception:
-        log.exception("business.get.failed")
-        raise
-
+    business = await service.get_current()
     return ok(BusinessRead.model_validate(business))
 
 
@@ -52,17 +41,7 @@ async def get_business(service: BusinessServiceDep) -> Response:
 async def update_business(
     payload: BusinessUpdate, service: BusinessServiceDep
 ) -> Response:
-    try:
-        business = await service.update_current(payload)
-    except HANDLED_ERRORS:
-        raise
-    except Exception:
-        log.exception(
-            "business.update.failed",
-            fields=sorted(payload.model_dump(exclude_unset=True)),
-        )
-        raise
-
+    business = await service.update_current(payload)
     return ok(BusinessRead.model_validate(business), message="Business updated")
 
 
@@ -75,14 +54,7 @@ async def update_business(
     dependencies=[require_permission("business.view")],
 )
 async def list_locations(service: BusinessServiceDep) -> Response:
-    try:
-        locations = await service.list_locations()
-    except HANDLED_ERRORS:
-        raise
-    except Exception:
-        log.exception("location.list.failed")
-        raise
-
+    locations = await service.list_locations()
     return ok([LocationRead.model_validate(loc) for loc in locations])
 
 
@@ -95,14 +67,7 @@ async def list_locations(service: BusinessServiceDep) -> Response:
 async def create_location(
     payload: LocationCreate, service: BusinessServiceDep
 ) -> Response:
-    try:
-        location = await service.create_location(payload)
-    except HANDLED_ERRORS:
-        raise
-    except Exception:
-        log.exception("location.create.failed", name=payload.name)
-        raise
-
+    location = await service.create_location(payload)
     return created(LocationRead.model_validate(location), message="Location created")
 
 
@@ -114,16 +79,5 @@ async def create_location(
 async def update_location(
     location_id: int, payload: LocationUpdate, service: BusinessServiceDep
 ) -> Response:
-    try:
-        location = await service.update_location(location_id, payload)
-    except HANDLED_ERRORS:
-        raise
-    except Exception:
-        log.exception(
-            "location.update.failed",
-            location_id=location_id,
-            fields=sorted(payload.model_dump(exclude_unset=True)),
-        )
-        raise
-
+    location = await service.update_location(location_id, payload)
     return ok(LocationRead.model_validate(location), message="Location updated")
