@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { PermissionGate } from "@/components/auth/permission-gate";
+import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/cn";
 
 /**
@@ -21,9 +22,7 @@ export function Sidebar() {
 
   return (
     <aside className="w-56 shrink-0 border-r border-zinc-200 p-4 dark:border-zinc-800">
-      <Link href="/products" className="block px-3 pb-4 text-lg font-semibold">
-        OpalPOS
-      </Link>
+      <Logo href="/products" size="sm" className="mb-4 px-3" />
 
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map((item) => (

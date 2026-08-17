@@ -5,6 +5,14 @@ export type LoginInput = {
   password: string;
 };
 
+/**
+ * Login form ki poori state. `remember` backend ko nahi jata — sirf ye tay
+ * karta hai ke token localStorage mein rahe ya tab band hote hi mit jaye.
+ */
+export type LoginCredentials = LoginInput & {
+  remember?: boolean;
+};
+
 export type RegisterInput = {
   business_name: string;
   email: string;

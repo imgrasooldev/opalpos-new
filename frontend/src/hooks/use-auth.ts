@@ -18,7 +18,12 @@ import {
 
 import { ApiError } from "@/lib/api";
 import * as authService from "@/lib/services/auth";
-import type { LoginInput, Me, RegisterInput, TokenResponse } from "@/types/auth";
+import type {
+  LoginCredentials,
+  Me,
+  RegisterInput,
+  TokenResponse,
+} from "@/types/auth";
 
 export const authKeys = {
   me: ["auth", "me"] as const,
@@ -34,7 +39,11 @@ export function useMe(): UseQueryResult<Me> {
   });
 }
 
-export function useLogin(): UseMutationResult<TokenResponse, Error, LoginInput> {
+export function useLogin(): UseMutationResult<
+  TokenResponse,
+  Error,
+  LoginCredentials
+> {
   const queryClient = useQueryClient();
   const router = useRouter();
 

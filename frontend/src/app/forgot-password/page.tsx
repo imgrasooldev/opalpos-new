@@ -1,24 +1,23 @@
 import type { Metadata } from "next";
 
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { LoginForm } from "@/components/auth/login-form";
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { SUPPORT_HREF } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "Sign in",
+  title: "Forgot password",
 };
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   return (
     <AuthLayout
-      title="Welcome back"
-      description="Sales, stock and customers — pick up where you left off"
+      title="Reset your password"
+      description="Happens to everyone — one email and you're back in"
     >
-      <LoginForm />
+      <ForgotPasswordForm />
 
-      {/* card ke bahar — reference ki tarah, form se alag rakha hai */}
       <p className="mt-6 text-center text-sm text-muted">
-        Trouble signing in?{" "}
+        Need help?{" "}
         <a
           href={SUPPORT_HREF}
           className="font-medium text-brand-500 hover:text-brand-600 dark:text-brand-300"

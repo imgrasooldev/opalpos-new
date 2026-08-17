@@ -1,26 +1,125 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------- */
+/* Semantic surfaces — light aur dark dono ek hi naam se milte hain.       */
+/* ---------------------------------------------------------------------- */
 :root {
+  /* native controls (checkbox, scrollbar) bhi light rahen */
+  color-scheme: light;
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0b1220;
+  --surface: #f5f7fc;
+  --line: #e3e8f2;
+  --muted: #5c6780;
+}
+
+/**
+ * Dark theme opt-in hai, OS setting par nahi.
+ *
+ * Pehle ye `prefers-color-scheme` par tha, jis se jis banday ka system dark
+ * hota uska landing header bhi dark ho jata — jab ke design light hai. Ab dark
+ * tab chalega jab `<html>` par `class="dark"` lagega (theme toggle ka kaam
+ * aage aasan rahe).
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+  color-scheme: dark;
+  --background: #050c22;
+  --foreground: #e9eefb;
+  --surface: #0b1533;
+  --line: #1a2549;
+  --muted: #94a2c2;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+
+  --font-sans: var(--font-sans-family);
+  --font-mono: var(--font-mono-family);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ---------------------------------------------------------------------- */
+/* Brand ramps — aqua -> blue -> violet. Gradient in teen ka safar hai.    */
+/* Yahan sirf tokens hain; inko utilities (bg-brand-500 waghera) Tailwind  */
+/* khud bana leta hai.                                                     */
+/* ---------------------------------------------------------------------- */
+@theme {
+  --color-aqua-200: #b4eefa;
+  --color-aqua-300: #7fe1f3;
+  --color-aqua-400: #35cfe8;
+  --color-aqua-500: #14b4d2;
+  --color-aqua-600: #0d90ab;
+
+  --color-brand-50: #eff4ff;
+  --color-brand-100: #dbe6ff;
+  --color-brand-200: #bdd0ff;
+  --color-brand-300: #92b0ff;
+  --color-brand-400: #6186fb;
+  --color-brand-500: #3b5be0;
+  --color-brand-600: #2f45c7;
+  --color-brand-700: #2839a2;
+  --color-brand-800: #253283;
+  --color-brand-900: #1e2a67;
+
+  --color-plum-400: #a06bf5;
+  --color-plum-500: #7c3aed;
+  --color-plum-600: #6425ce;
+
+  /* Dark panels (hero, auth ka left side, dashboard sidebar).
+     Pehle ye kaafi black ki taraf thi — ab neela saaf nazar aata hai. */
+  --color-navy-700: #35519c;
+  --color-navy-800: #253d7d;
+  --color-navy-900: #1b2c5e;
+  --color-navy-950: #121f45;
+}
+
+/**
+ * Ek hi gradient poore product mein — CTA, avatars, brand accents.
+ *
+ * Stops jaan boojh kar gehre chune hain (aqua-500/plum-600, aqua-400/plum-500
+ * nahi): hue ka safar utna hi rehta hai magar brightness ka uchhal kam ho jata
+ * hai, is liye neon ke bajaye sanjeeda lagta hai. Angle 135deg — diagonal
+ * sheen ke saath mel khata hai.
+ */
+@utility bg-brand-gradient {
+  background-image: linear-gradient(
+    135deg,
+    var(--color-aqua-500) 0%,
+    var(--color-brand-500) 48%,
+    var(--color-plum-600) 100%
+  );
+}
+
+/**
+ * Wahi gradient + upar se ek halki white sheen.
+ *
+ * Sheen ko background layer rakha hai (pseudo-element nahi) taake wo hamesha
+ * button ke text ke NEECHE rahe — overlay text ko dhundla kar deta.
+ */
+@utility bg-brand-gradient-sheen {
+  background-image:
+    linear-gradient(180deg, rgb(255 255 255 / 0.18), rgb(255 255 255 / 0) 55%),
+    linear-gradient(
+      135deg,
+      var(--color-aqua-500) 0%,
+      var(--color-brand-500) 48%,
+      var(--color-plum-600) 100%
+    );
+}
+
+/* Hero/auth panels ka dotted texture. Rang `currentColor` se aata hai. */
+@utility bg-dot-grid {
+  background-image: radial-gradient(currentColor 1px, transparent 1.2px);
+  background-size: 14px 14px;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans-family), ui-sans-serif, system-ui, sans-serif;
 }
