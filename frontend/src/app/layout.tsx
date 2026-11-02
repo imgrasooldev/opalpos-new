@@ -42,7 +42,9 @@ export default function RootLayout({
       lang="en"
       className={`${sans.variable} ${mono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      {/* browser extensions (e.g. ColorZilla's `cz-shortcut-listen`) add attributes
+          to body before React loads — ignore mismatches on this one tag only */}
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

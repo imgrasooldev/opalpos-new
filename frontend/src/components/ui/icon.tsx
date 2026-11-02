@@ -40,7 +40,17 @@ export type IconName =
   | "truck"
   | "receipt"
   | "dollar"
-  | "refund";
+  | "refund"
+  | "pencil"
+  | "trash"
+  | "download"
+  | "printer"
+  | "columns"
+  | "sort"
+  | "chevron-left"
+  | "lock"
+  | "filter"
+  | "phone";
 
 const PATHS: Record<IconName, ReactNode> = {
   mail: (
@@ -238,6 +248,57 @@ const PATHS: Record<IconName, ReactNode> = {
       <path d="M4 11a8 8 0 1 1 2.3 5.7" />
       <path d="M4 5.5V11h5.5" />
     </>
+  ),
+  pencil: (
+    <>
+      <path d="M15.5 5.5 18.5 8.5" />
+      <path d="M4.5 19.5 5.3 16a1 1 0 0 1 .3-.5L16 5.1a1.4 1.4 0 0 1 2 0l.9.9a1.4 1.4 0 0 1 0 2L8.5 18.4a1 1 0 0 1-.5.3Z" />
+    </>
+  ),
+  trash: (
+    <>
+      <path d="M4.5 7h15" />
+      <path d="M9.5 7V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2" />
+      <path d="M6.5 7 7.3 19a1.5 1.5 0 0 0 1.5 1.5h6.4a1.5 1.5 0 0 0 1.5-1.5L17.5 7" />
+      <path d="M10.5 11v5.5M13.5 11v5.5" />
+    </>
+  ),
+  download: (
+    <>
+      <path d="M12 4v11" />
+      <path d="m7.5 10.5 4.5 4.5 4.5-4.5" />
+      <path d="M4.5 16.5v2a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-2" />
+    </>
+  ),
+  printer: (
+    <>
+      <path d="M7 8.5V4.5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v4" />
+      <rect x="3.5" y="8.5" width="17" height="8" rx="2" />
+      <rect x="7" y="13.5" width="10" height="7" rx="1" />
+    </>
+  ),
+  columns: (
+    <>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+      <path d="M9.5 4.5v15M14.5 4.5v15" />
+    </>
+  ),
+  sort: (
+    <>
+      <path d="m8 9.5 4-4 4 4" />
+      <path d="m8 14.5 4 4 4-4" />
+    </>
+  ),
+  "chevron-left": <path d="m14.5 6-6 6 6 6" />,
+  lock: (
+    <>
+      <rect x="5" y="10.5" width="14" height="10" rx="2" />
+      <path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3" />
+    </>
+  ),
+  filter: <path d="M4 5.5h16l-6.2 7.4v5.3l-3.6 1.8v-7.1Z" />,
+  phone: (
+    <path d="M6.6 4h2.6l1.4 4-2 1.3a10.5 10.5 0 0 0 6.1 6.1l1.3-2 4 1.4v2.6A1.6 1.6 0 0 1 18.4 19 14.5 14.5 0 0 1 5 5.6 1.6 1.6 0 0 1 6.6 4Z" />
   ),
 };
 

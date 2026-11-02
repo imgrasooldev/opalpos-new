@@ -6,15 +6,37 @@ type Props = {
   store: { name: string };
   user: { name: string; initials: string };
   today: string;
+  sidebarCollapsed: boolean;
+  /** Collapses the sidebar on desktop, opens the drawer on mobile. */
+  onToggleMenu: () => void;
 };
 
-export function ConsoleTopbar({ section, store, user, today }: Props) {
+export function ConsoleTopbar({
+  section,
+  store,
+  user,
+  today,
+  sidebarCollapsed,
+  onToggleMenu,
+}: Props) {
   return (
     <header className="flex items-center justify-between gap-4 border-b border-line bg-background px-5 py-3">
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm">
-        <Icon name="chevron-right" className="h-4 w-4 text-muted" />
-        <span className="font-medium">{section}</span>
-      </nav>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onToggleMenu}
+          aria-label={sidebarCollapsed ? "Expand sidebar" : "Toggle sidebar"}
+          title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="-ml-1.5 rounded-lg p-1.5 text-muted transition-colors hover:bg-surface hover:text-foreground"
+        >
+          <Icon name="menu" className="h-5 w-5" />
+        </button>
+
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm">
+          <Icon name="chevron-right" className="h-4 w-4 text-muted" />
+          <span className="font-medium">{section}</span>
+        </nav>
+      </div>
 
       <div className="flex items-center gap-3">
         <label className="relative hidden xl:block">
