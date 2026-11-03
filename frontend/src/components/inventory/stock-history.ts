@@ -44,7 +44,14 @@ export function stockUnits(p: DemoProduct) {
 /** Adds movements (skipping zero quantities) stamped with the current time. */
 export function logStock(
   p: DemoProduct,
-  changes: { sku: string; qty: number; location: string | null; type?: MovementType }[],
+  changes: {
+    sku: string;
+    qty: number;
+    location: string | null;
+    type?: MovementType;
+    ref?: string | null;
+    party?: string | null;
+  }[],
 ): DemoProduct {
   const now = new Date().toISOString().slice(0, 16);
   const added = changes
@@ -55,8 +62,8 @@ export function logStock(
       qty: c.qty,
       location: c.location,
       date: now,
-      ref: null,
-      party: null,
+      ref: c.ref ?? null,
+      party: c.party ?? null,
     }));
   return added.length ? { ...p, movements: [...(p.movements ?? []), ...added] } : p;
 }
@@ -117,14 +124,18 @@ export function summarize(rows: HistoryRow[]) {
   const sum = (type: MovementType) =>
     rows.filter((r) => r.type === type).reduce((t, r) => t + Math.abs(r.qty), 0);
   return {
-    totalPurchase: 0,
+    totalPurchase: rows.filter((r) => r.type === "Purchase").reduce((t, r) => t + r.qty, 0),
     openingAdd: rows.filter((r) => r.type === "Opening / Add stock").reduce((t, r) => t + r.qty, 0),
-    sellReturn: 0,
-    transfersIn: 0,
-    sold: sum("Sell"),
+    sellReturn: rows.filter((r) => r.type === "Sell return").reduce((t, r) => t + r.qty, 0),
+    transfersIn: rows.filter((r) => r.type === "Stock transfer (in)").reduce((t, r) => t + r.qty, 0) + 0,
+    // net, like purchase returns: deleting a sale logs a reversal
+    // "+ 0" turns -0 into 0, so an empty total never prints as "-0.00"
+    sold: -rows.filter((r) => r.type === "Sell").reduce((t, r) => t + r.qty, 0) + 0,
     adjustment: sum("Stock adjustment"),
-    purchaseReturn: 0,
-    transfersOut: sum("Stock transfer (out)"),
+    // net: a deleted return logs a reversal that cancels it out
+    purchaseReturn: -rows.filter((r) => r.type === "Purchase return").reduce((t, r) => t + r.qty, 0) + 0,
+    // net too: a deleted transfer logs a reversal
+    transfersOut: -rows.filter((r) => r.type === "Stock transfer (out)").reduce((t, r) => t + r.qty, 0) + 0,
     current: rows.reduce((t, r) => t + r.qty, 0),
   };
 }

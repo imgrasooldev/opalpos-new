@@ -85,7 +85,7 @@ export function ViewProductDialog({ product, onClose }: { product: DemoProduct; 
           <Facts
             items={[
               ["Category", product.category],
-              ["Sub category", null],
+              ["Sub category", product.subCategory ?? null],
               ["Manage stock?", product.manageStock === false ? "No" : "Yes"],
               ["Alert quantity", product.alertQuantity != null ? NUMBER.format(product.alertQuantity) : null],
             ]}

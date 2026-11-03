@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { RowAction } from "@/components/ui/table-controls";
 import { cn } from "@/lib/cn";
+import { csvCell, downloadCsv, parseCsv } from "@/lib/csv";
 
 /** One CSV line per product, or per variation of a variable product. */
 function priceRows(products: DemoProduct[]) {
@@ -39,40 +40,6 @@ function priceRows(products: DemoProduct[]) {
   );
 }
 
-const csvCell = (value: string) => (/[",\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value);
-
-/** Minimal CSV parser: commas, quoted cells, "" escapes, \n or \r\n lines. */
-function parseCsv(text: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let cell = "";
-  let quoted = false;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (quoted) {
-      if (ch === '"' && text[i + 1] === '"') {
-        cell += '"';
-        i++;
-      } else if (ch === '"') quoted = false;
-      else cell += ch;
-    } else if (ch === '"') quoted = true;
-    else if (ch === ",") {
-      row.push(cell);
-      cell = "";
-    } else if (ch === "\n" || ch === "\r") {
-      if (ch === "\r" && text[i + 1] === "\n") i++;
-      row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = "";
-    } else cell += ch;
-  }
-  if (cell || row.length) {
-    row.push(cell);
-    rows.push(row);
-  }
-  return rows.filter((r) => r.some((c) => c.trim()));
-}
 
 export function PriceGroupsScreen() {
   const groups = usePriceGroups();
@@ -99,13 +66,7 @@ export function PriceGroupsScreen() {
         .map(csvCell)
         .join(","),
     );
-    const blob = new Blob([[header.map(csvCell).join(","), ...lines].join("\n")], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "selling-price-group-prices.csv";
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadCsv("selling-price-group-prices.csv", [header.map(csvCell).join(","), ...lines]);
   }
 
   async function importPrices() {

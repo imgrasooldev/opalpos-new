@@ -16,6 +16,7 @@ import {
 } from "@/components/contacts/customers-data";
 import { CustomerDialog } from "@/components/contacts/customer-dialog";
 import { PaymentDialog } from "@/components/contacts/payment-dialog";
+import { nextContactId, updateCustomers, useCustomers } from "@/components/contacts/customer-store";
 import { ActionsMenu } from "@/components/ui/actions-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -249,15 +250,10 @@ function noSaleSince(c: DemoCustomer, months: number) {
   return new Date(c.lastSaleOn) < cutoff;
 }
 
-/** Next free numeric contact ID, e.g. "0014" — what "leave empty to autogenerate" does. */
-function nextContactId(customers: DemoCustomer[]) {
-  const highest = Math.max(0, ...customers.map((c) => Number(c.contactId) || 0));
-  return String(highest + 1).padStart(4, "0");
-}
-
-export function CustomersScreen({ customers: initial }: { customers: DemoCustomer[] }) {
-  // kept in state so Add/Edit show up immediately (demo only, lost on reload)
-  const [customers, setCustomers] = useState(initial);
+export function CustomersScreen() {
+  // shared demo store, so customers added from a sale show up here too
+  const customers = useCustomers();
+  const setCustomers = updateCustomers;
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [dialog, setDialog] = useState<{ customer?: DemoCustomer } | null>(null);
   const [paying, setPaying] = useState<DemoCustomer | null>(null);

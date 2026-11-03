@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { DEMO_CUSTOMERS } from "@/components/contacts/customers-data";
 import { CustomersScreen } from "@/components/contacts/customers-screen";
 import { DEMO_SESSION } from "@/components/dashboard/dashboard-data";
 import { ConsoleShell } from "@/components/shell/console-shell";
@@ -23,7 +22,7 @@ export default function CustomersPage() {
           </p>
         </div>
 
-        <CustomersScreen customers={DEMO_CUSTOMERS} />
+        <CustomersScreen />
       </div>
     </ConsoleShell>
   );

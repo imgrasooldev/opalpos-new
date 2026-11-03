@@ -37,6 +37,7 @@ export type IconName =
   | "calendar"
   | "store"
   | "alert"
+  | "info"
   | "truck"
   | "receipt"
   | "dollar"
@@ -220,6 +221,13 @@ const PATHS: Record<IconName, ReactNode> = {
       <circle cx="12" cy="12" r="8.5" />
       <path d="M12 8v4.5" />
       <path d="M12 16h.01" />
+    </>
+  ),
+  info: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 11v5" />
+      <path d="M12 8h.01" />
     </>
   ),
   truck: (

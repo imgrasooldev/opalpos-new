@@ -22,9 +22,13 @@ export type Shelf = { rack: string; row: string; position: string };
 
 export type MovementType =
   | "Opening / Add stock"
+  | "Purchase"
+  | "Purchase return"
   | "Sell"
+  | "Sell return"
   | "Stock adjustment"
-  | "Stock transfer (out)";
+  | "Stock transfer (out)"
+  | "Stock transfer (in)";
 
 /** One change to a product's (or variation's) stock — see stock-history.ts. */
 export type StockMovement = {
@@ -46,6 +50,8 @@ export type DemoProduct = {
   sku: string;
   type: "Single" | "Variable" | "Combo";
   category: string | null;
+  /** A sub category of `category`, by name. */
+  subCategory?: string | null;
   brand: string | null;
   unit: string;
   tax: string | null;
@@ -75,8 +81,6 @@ export type DemoProduct = {
 };
 
 export const PRODUCT_TYPES = ["Single", "Variable", "Combo"] as const;
-export const CATEGORIES = ["Vapes", "Glass", "Accessories", "Hookah"];
-export const BRANDS = ["Cloud Co", "Pure Glass", "Zippo", "Starbuzz"];
 export const TAXES = ["Sales tax 8.25%"];
 export const PRODUCT_LOCATIONS = ["GR Store", "City Outlet"];
 /** Business location codes, shown next to the name as in the old screens. */

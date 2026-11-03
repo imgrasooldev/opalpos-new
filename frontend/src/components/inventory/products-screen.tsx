@@ -15,8 +15,6 @@ import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 
 import {
-  BRANDS,
-  CATEGORIES,
   LOCATION_CODES,
   PRODUCT_LOCATIONS,
   PRODUCT_TYPES,
@@ -26,6 +24,8 @@ import {
 import { AddStockDialog } from "@/components/inventory/add-stock-dialog";
 import { useDemoProducts } from "@/components/inventory/product-store";
 import { logStock } from "@/components/inventory/stock-history";
+import { useBrands } from "@/components/inventory/brands";
+import { useCategories } from "@/components/inventory/categories";
 import { useUnits } from "@/components/inventory/units";
 import { ViewProductDialog } from "@/components/inventory/view-product-dialog";
 import { ActionsMenu } from "@/components/ui/actions-menu";
@@ -361,6 +361,8 @@ export function ProductsScreen() {
   // shared with the add product and opening stock screens
   const [products, setProducts] = useDemoProducts();
   const units = useUnits();
+  const categories = useCategories();
+  const brands = useBrands();
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [tab, setTab] = useState<Tab>("all");
   const [selected, setSelected] = useState<Set<string | number>>(new Set());
@@ -483,7 +485,12 @@ export function ProductsScreen() {
       >
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <FilterSelect label="Product type" value={filters.type} onChange={(v) => set("type", v)} options={PRODUCT_TYPES} />
-          <FilterSelect label="Category" value={filters.category} onChange={(v) => set("category", v)} options={CATEGORIES} />
+          <FilterSelect
+            label="Category"
+            value={filters.category}
+            onChange={(v) => set("category", v)}
+            options={categories.filter((c) => c.parentId === null).map((c) => c.name)}
+          />
           <FilterSelect
             label="Unit"
             value={filters.unit}
@@ -497,7 +504,12 @@ export function ProductsScreen() {
             options={TAXES}
             extra={<option value="none">No tax</option>}
           />
-          <FilterSelect label="Brand" value={filters.brand} onChange={(v) => set("brand", v)} options={BRANDS} />
+          <FilterSelect
+            label="Brand"
+            value={filters.brand}
+            onChange={(v) => set("brand", v)}
+            options={brands.map((b) => b.name)}
+          />
           <FilterSelect
             label="Business location"
             value={filters.location}

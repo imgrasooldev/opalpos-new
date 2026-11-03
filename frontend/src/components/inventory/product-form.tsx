@@ -27,13 +27,15 @@ import { useState, type FormEvent, type ReactNode } from "react";
 
 import { nextIds, updateProducts, useDemoProducts } from "@/components/inventory/product-store";
 import { usePriceGroups, type PriceGroup } from "@/components/inventory/price-groups";
+import { BrandDialog } from "@/components/inventory/brands-screen";
+import { updateBrands, useBrands } from "@/components/inventory/brands";
+import { CategoryDialog } from "@/components/inventory/categories-screen";
+import { updateCategories, useCategories } from "@/components/inventory/categories";
 import { logStock } from "@/components/inventory/stock-history";
 import { updateUnits, useUnits } from "@/components/inventory/units";
 import { UnitDialog } from "@/components/inventory/units-screen";
 import { useTemplates } from "@/components/inventory/variation-templates";
 import {
-  BRANDS,
-  CATEGORIES,
   LOCATION_CODES,
   PRODUCT_LOCATIONS,
   TAXES,
@@ -50,9 +52,8 @@ import {
 } from "@/components/inventory/stock-lines";
 import { Button, buttonStyles } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Icon, type IconName } from "@/components/ui/icon";
+import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-import { Modal } from "@/components/ui/modal";
 import { cn } from "@/lib/cn";
 
 const BARCODE_TYPES = ["Code 128 (C128)", "Code 39 (C39)", "EAN-13", "EAN-8", "UPC-A", "UPC-E"];
@@ -173,12 +174,26 @@ function ProductFormFields({
   // units come from Inventory -> Units (by short name), plus a saved unit no longer listed
   const allUnits = useUnits();
   const units = withValue(allUnits.map((u) => u.shortName), product?.unit);
-  const [brands, setBrands] = useState(() => withValue(BRANDS, product?.brand));
-  const [categories, setCategories] = useState(() => withValue(CATEGORIES, product?.category));
+  // brands come from Inventory -> Brands, plus a saved one no longer listed
+  const allBrands = useBrands();
+  const brands = withValue(allBrands.map((b) => b.name), product?.brand);
+  // categories come from Inventory -> Categories (top level), plus a saved one no longer listed
+  const allCategories = useCategories();
+  const categories = withValue(
+    allCategories.filter((c) => c.parentId === null).map((c) => c.name),
+    product?.category,
+  );
   const [unit, setUnit] = useState(product?.unit ?? "Pcs");
   const [brand, setBrand] = useState(product?.brand ?? "");
   const [category, setCategory] = useState(product?.category ?? "");
-  const [quickAdd, setQuickAdd] = useState<"unit" | "brand" | "category" | null>(null);
+  const [subCategory, setSubCategory] = useState(product?.subCategory ?? "");
+  const parentCategory = allCategories.find((c) => c.parentId === null && c.name === category);
+  const subCategories = withValue(
+    allCategories.filter((c) => parentCategory && c.parentId === parentCategory.id).map((c) => c.name),
+    // keep a saved sub category visible while its parent is still selected
+    category === product?.category ? product?.subCategory : null,
+  );
+  const [quickAdd, setQuickAdd] = useState<"unit" | "brand" | "category" | "subCategory" | null>(null);
 
   const [locations, setLocations] = useState<string[]>(product?.locations ?? [PRODUCT_LOCATIONS[0]]);
   const [manageStock, setManageStock] = useState(product?.manageStock ?? true);
@@ -312,6 +327,7 @@ function ProductFormFields({
       sku: productSku,
       type,
       category: category || null,
+      subCategory: category && subCategory ? subCategory : null,
       brand: brand || null,
       unit,
       tax: value("tax") || null,
@@ -466,11 +482,25 @@ function ProductFormFields({
             <SelectField
               label="Category"
               value={category}
-              onChange={setCategory}
+              onChange={(value) => {
+                setCategory(value);
+                // a sub category belongs to one category
+                setSubCategory("");
+              }}
               options={categories}
               placeholder="Please select"
               onAdd={() => setQuickAdd("category")}
             />
+            {parentCategory && (
+              <SelectField
+                label="Sub category"
+                value={subCategory}
+                onChange={setSubCategory}
+                options={subCategories}
+                placeholder={subCategories.length ? "Please select" : `No sub categories in ${category}`}
+                onAdd={() => setQuickAdd("subCategory")}
+              />
+            )}
           </div>
 
           <div className="mt-5 grid gap-5 border-t border-line pt-5 md:grid-cols-3">
@@ -801,18 +831,32 @@ function ProductFormFields({
         />
       )}
 
-      {quickAdd && quickAdd !== "unit" && (
-        <QuickAddDialog
-          kind={quickAdd}
+      {/* "+" next to Category / Sub category adds it to Inventory -> Categories */}
+      {(quickAdd === "category" || quickAdd === "subCategory") && (
+        <CategoryDialog
+          all={allCategories}
+          fixedParent={quickAdd === "subCategory" ? parentCategory : undefined}
           onClose={() => setQuickAdd(null)}
-          onAdd={(name) => {
-            if (quickAdd === "brand") {
-              setBrands((prev) => [...prev, name]);
-              setBrand(name);
-            } else {
-              setCategories((prev) => [...prev, name]);
-              setCategory(name);
+          onSave={(values) => {
+            updateCategories((prev) => [...prev, { id: Math.max(0, ...prev.map((c) => c.id)) + 1, ...values }]);
+            if (values.parentId) setSubCategory(values.name);
+            else {
+              setCategory(values.name);
+              setSubCategory("");
             }
+            setQuickAdd(null);
+          }}
+        />
+      )}
+
+      {/* "+" next to Brand adds it to Inventory -> Brands */}
+      {quickAdd === "brand" && (
+        <BrandDialog
+          taken={allBrands.map((b) => b.name.toLowerCase())}
+          onClose={() => setQuickAdd(null)}
+          onSave={(values) => {
+            updateBrands((prev) => [...prev, { id: Math.max(0, ...prev.map((b) => b.id)) + 1, ...values }]);
+            setBrand(values.name);
             setQuickAdd(null);
           }}
         />
@@ -1137,65 +1181,5 @@ function FileInput({ name, compact }: { name: string; compact?: boolean }) {
         compact ? "file:py-1" : "file:py-1.5",
       )}
     />
-  );
-}
-
-const QUICK_ADD: Record<"unit" | "brand" | "category", { title: string; placeholder: string; icon: IconName }> = {
-  unit: { title: "Add unit", placeholder: "e.g. Dozen", icon: "cube" },
-  brand: { title: "Add brand", placeholder: "e.g. Cloud Co", icon: "tag" },
-  category: { title: "Add category", placeholder: "e.g. Vapes", icon: "grid" },
-};
-
-/** The "+" next to unit / brand / category: name a new option and select it. */
-function QuickAddDialog({
-  kind,
-  onClose,
-  onAdd,
-}: {
-  kind: "unit" | "brand" | "category";
-  onClose: () => void;
-  onAdd: (name: string) => void;
-}) {
-  const [name, setName] = useState("");
-  const [error, setError] = useState(false);
-  const meta = QUICK_ADD[kind];
-
-  return (
-    <Modal
-      title={meta.title}
-      description="It's added to the list and selected for this product."
-      onClose={onClose}
-      className="max-w-sm"
-      footer={
-        <>
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Close
-          </Button>
-          <Button
-            type="button"
-            variant="brand"
-            onClick={() => (name.trim() ? onAdd(name.trim()) : setError(true))}
-          >
-            Save
-          </Button>
-        </>
-      }
-    >
-      <Input
-        autoFocus
-        label="Name *"
-        placeholder={meta.placeholder}
-        value={name}
-        onChange={(event) => {
-          setName(event.target.value);
-          setError(false);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && name.trim()) onAdd(name.trim());
-        }}
-        leading={<Icon name={meta.icon} className="h-4 w-4" />}
-        error={error ? "Enter a name" : undefined}
-      />
-    </Modal>
   );
 }
