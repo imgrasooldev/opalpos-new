@@ -62,12 +62,16 @@ function Pill({ tone, children }: { tone: string; children: ReactNode }) {
 type Filters = { location: string; supplier: string; status: string; payment: string; from: string; to: string };
 const NO_FILTERS: Filters = { location: "", supplier: "", status: "", payment: "", from: "", to: "" };
 
-export function PurchasesScreen() {
+/** `viewId` opens that purchase's View popup (from `?view=<id>`, e.g. the purchase payment report). */
+export function PurchasesScreen({ viewId }: { viewId?: number } = {}) {
   const purchases = usePurchases();
   const suppliers = useSuppliers();
   const returns = usePurchaseReturns();
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [viewing, setViewing] = useState<Purchase | null>(null);
+  const [openId, setOpenId] = useState(viewId);
+  // a purchase linked by id is looked up once the store has it
+  const shown = viewing ?? purchases.find((p) => p.id === openId) ?? null;
   const [paying, setPaying] = useState<Purchase | null>(null);
   const [changing, setChanging] = useState<Purchase | null>(null);
   const [confirm, setConfirm] = useState<ConfirmOptions | null>(null);
@@ -315,11 +319,14 @@ export function PurchasesScreen() {
         )}
       />
 
-      {viewing && (
+      {shown && (
         <ViewDialog
-          purchase={purchases.find((p) => p.id === viewing.id) ?? viewing}
-          supplier={suppliers.find((s) => s.id === viewing.supplierId)}
-          onClose={() => setViewing(null)}
+          purchase={purchases.find((p) => p.id === shown.id) ?? shown}
+          supplier={suppliers.find((s) => s.id === shown.supplierId)}
+          onClose={() => {
+            setViewing(null);
+            setOpenId(undefined);
+          }}
         />
       )}
 

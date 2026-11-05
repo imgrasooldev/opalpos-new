@@ -8,9 +8,10 @@ export const metadata: Metadata = {
   title: "Purchases",
 };
 
-/** Purchases -> List purchases. */
-export default function PurchasesPage() {
+/** Purchases -> List purchases; `?view=<id>` opens that purchase. */
+export default async function PurchasesPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
   const { user, store, today } = DEMO_SESSION;
+  const { view } = await searchParams;
 
   return (
     <ConsoleShell section="Purchases" store={store} user={user} today={today}>
@@ -20,7 +21,7 @@ export default function PurchasesPage() {
           <p className="mt-1 text-[13px] text-muted">Stock you bought from suppliers, and what you still owe.</p>
         </div>
 
-        <PurchasesScreen />
+        <PurchasesScreen key={view ?? "list"} viewId={Number(view) || undefined} />
       </div>
     </ConsoleShell>
   );
