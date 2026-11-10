@@ -4,7 +4,7 @@
  * Variation templates (Inventory -> Variations): named value lists such as
  * "Color: Black, Silver" that fill a variable product's variation rows.
  *
- * Demo store like product-store.ts — memory plus sessionStorage, so templates
+ * Demo store like product-store.ts — memory plus localStorage, so templates
  * added here are there on the Add product form. Replaced by the API later.
  */
 

@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { Logo } from "@/components/brand/logo";
+import { signInPlatform } from "@/components/platform/business-access";
 import { usePlatformUsers } from "@/components/platform/platform-data";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -42,6 +43,7 @@ export function PlatformLoginForm() {
   function submitCode(event: FormEvent) {
     event.preventDefault();
     if (!/^\d{6}$/.test(code)) return setError("Enter the 6-digit code from your authenticator app.");
+    signInPlatform();
     router.push("/platform");
   }
 

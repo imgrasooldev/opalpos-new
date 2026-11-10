@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { AttentionList } from "@/components/dashboard/attention-list";
 import { DEMO_SESSION, STATS } from "@/components/dashboard/dashboard-data";
+import { GreetingName } from "@/components/dashboard/greeting-name";
 import { RecentOrders } from "@/components/dashboard/recent-orders";
 import { RevenueBreakdown } from "@/components/dashboard/revenue-breakdown";
 import { SalesOverview } from "@/components/dashboard/sales-overview";
@@ -30,7 +31,7 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-semibold tracking-tight">
-              Good evening, {user.name}
+              Good evening, <GreetingName fallback={user.name} />
             </h1>
             <p className="mt-1 text-[13px] text-muted">
               Here&apos;s what&apos;s happening with your business today.

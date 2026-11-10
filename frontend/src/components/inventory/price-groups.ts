@@ -6,7 +6,7 @@
  * variation (`DemoProduct.groupPrices`); without one, the default selling
  * price applies.
  *
- * Demo store like product-store.ts — memory plus sessionStorage. Replaced by
+ * Demo store like product-store.ts — memory plus localStorage. Replaced by
  * the API later.
  */
 

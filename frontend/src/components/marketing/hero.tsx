@@ -50,7 +50,7 @@ export function Hero() {
 
           <div className="mt-9 flex flex-wrap gap-4">
             <Link
-              href="/login"
+              href="/register"
               className={buttonStyles({ variant: "brand", size: "lg" })}
             >
               Get started

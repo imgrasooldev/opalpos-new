@@ -41,7 +41,7 @@ export function SiteHeader() {
           <Link href="/login" className={buttonStyles({ variant: "secondary" })}>
             Sign in
           </Link>
-          <Link href="/login" className={buttonStyles({ variant: "accent" })}>
+          <Link href="/register" className={buttonStyles({ variant: "accent" })}>
             Get started
           </Link>
         </div>
@@ -81,7 +81,7 @@ export function SiteHeader() {
           <Link href="/login" className={buttonStyles({ variant: "secondary" })}>
             Sign in
           </Link>
-          <Link href="/login" className={buttonStyles({ variant: "accent" })}>
+          <Link href="/register" className={buttonStyles({ variant: "accent" })}>
             Get started
           </Link>
         </div>

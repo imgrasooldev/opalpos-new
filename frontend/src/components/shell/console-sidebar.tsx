@@ -125,6 +125,7 @@ export const BUSINESS_NAV: NavItem[] = [
     label: "Settings",
     icon: "gear",
     children: [
+      { label: "Subscription", href: "/settings/subscription" },
       { label: "Business Settings", href: "/settings/business" },
       { label: "Business Locations", href: "/settings/locations" },
       { label: "Invoice Settings", href: "/settings/invoice" },

@@ -3,7 +3,8 @@
 /**
  * Demo product store shared by the product screens (list, add, opening stock)
  * so a product added on one page shows up on the next. Kept in memory and in
- * sessionStorage, so it survives navigation and reloads in the same tab.
+ * localStorage (see demo-store.ts), so it survives reloads and is shared by
+ * every tab.
  *
  * STAND-IN FOR THE API: once the products endpoints are wired up, the screens
  * read and write through the hooks in `hooks/use-products.ts` instead.
@@ -11,38 +12,12 @@
 
 import { useSyncExternalStore } from "react";
 
+import { createDemoStore } from "@/components/inventory/demo-store";
 import { DEMO_PRODUCTS, type DemoProduct } from "@/components/inventory/products-data";
 
-const KEY = "opalpay.demo-products";
+const store = createDemoStore<DemoProduct>("opalpay.demo-products", DEMO_PRODUCTS);
 
-let products: DemoProduct[] | null = null;
-const listeners = new Set<() => void>();
-
-function load(): DemoProduct[] {
-  if (products) return products;
-  try {
-    const saved = sessionStorage.getItem(KEY);
-    products = saved ? (JSON.parse(saved) as DemoProduct[]) : DEMO_PRODUCTS;
-  } catch {
-    products = DEMO_PRODUCTS;
-  }
-  return products;
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
-export function updateProducts(update: (prev: DemoProduct[]) => DemoProduct[]) {
-  products = update(load());
-  try {
-    sessionStorage.setItem(KEY, JSON.stringify(products));
-  } catch {
-    // storage blocked — changes still apply until the tab is closed
-  }
-  listeners.forEach((listener) => listener());
-}
+export const updateProducts = store.update;
 
 /**
  * The products, plus a setter that takes an updater like `setState`.
@@ -50,14 +25,15 @@ export function updateProducts(update: (prev: DemoProduct[]) => DemoProduct[]) {
  * saved changes appear right after hydration, without a mismatch.
  */
 export function useDemoProducts() {
-  const list = useSyncExternalStore(subscribe, load, () => DEMO_PRODUCTS);
-  return [list, updateProducts] as const;
+  return [store.use(), updateProducts] as const;
 }
 
-/** False on the server and during hydration — wait for it before reading saved-only products. */
+const noSubscribe = () => () => {};
+
+/** False on the server and during hydration — wait for it before reading saved-only data. */
 export function useHydrated() {
   return useSyncExternalStore(
-    subscribe,
+    noSubscribe,
     () => true,
     () => false,
   );

@@ -61,13 +61,26 @@ export const draftFrom = (sub: Subscription | undefined, defaultPlanId: number, 
     : { planId: defaultPlanId, addOns: [], extraLocations: 0, extraUsers: 0, cycle, method: "Card", autoRenew: true, customPrice: null };
 
 /** The choices; `onChange` gets the whole new draft. */
-export function SubscriptionPicker({ draft, onChange, plans, features }: { draft: Draft; onChange: (d: Draft) => void; plans: Plan[]; features: Feature[] }) {
+export function SubscriptionPicker({
+  draft,
+  onChange,
+  plans,
+  features,
+  shopView,
+}: {
+  draft: Draft;
+  onChange: (d: Draft) => void;
+  plans: Plan[];
+  features: Feature[];
+  /** The shop changing its own subscription: no private plans, no agreed price. */
+  shopView?: boolean;
+}) {
   const set = (patch: Partial<Draft>) => onChange({ ...draft, ...patch });
   const plan = plans.find((p) => p.id === draft.planId);
   const addOns = features.filter((f) => !f.core && !f.unit);
   const loc = features.find((f) => f.unit === "location");
   const user = features.find((f) => f.unit === "user");
-  const choosable = plans.filter((p) => p.active || p.id === draft.planId).sort((a, b) => a.sortOrder - b.sortOrder);
+  const choosable = plans.filter((p) => (p.active && !(shopView && p.isPrivate)) || p.id === draft.planId).sort((a, b) => a.sortOrder - b.sortOrder);
   const per = draft.cycle === "Monthly" ? "mo" : "yr";
 
   return (
@@ -169,7 +182,7 @@ export function SubscriptionPicker({ draft, onChange, plans, features }: { draft
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className={cn("grid gap-4", shopView ? "md:grid-cols-2" : "md:grid-cols-3")}>
         <Field label="Pays by" hint={draft.method === "Card" ? "Charged on each renewal" : "Gets an invoice to pay by hand"}>
           <Select label="Pays by" value={draft.method} onChange={(v) => set({ method: v as PayMethod })}>
             {PAY_METHODS.map((m) => (
@@ -177,6 +190,7 @@ export function SubscriptionPicker({ draft, onChange, plans, features }: { draft
             ))}
           </Select>
         </Field>
+        {!shopView && (
         <Field label="Agreed price" hint="Leave empty for the list price">
           <span className="relative block">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-zinc-400">$</span>
@@ -193,6 +207,7 @@ export function SubscriptionPicker({ draft, onChange, plans, features }: { draft
             />
           </span>
         </Field>
+        )}
         <div className="flex items-end">
           <div className="w-full">
             <Toggle checked={draft.autoRenew} onChange={(v) => set({ autoRenew: v })} label="Auto renew" hint="Off: it ends with the current period" />

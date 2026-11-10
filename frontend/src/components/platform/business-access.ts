@@ -30,8 +30,28 @@ export const HOME_BUSINESS_ID = 1;
 
 const acting = createDemoStore<{ id: number; viaPlatform: boolean }>("opalpay.acting-business", [{ id: HOME_BUSINESS_ID, viaPlatform: false }]);
 
+/**
+ * Who is signed in, for the demo: the shop console and the platform console
+ * each have their own sign-in. Both start signed in, so links straight to a
+ * screen keep working; "Sign out" sends you to that console's login page.
+ */
+const auth = createDemoStore<{ shop: boolean; platform: boolean }>("opalpay.demo-auth", [{ shop: true, platform: true }]);
+export const useDemoAuth = () => auth.use()[0] ?? { shop: true, platform: true };
+
+/** Shop login / sign-up: the console now belongs to this business. */
+export function signInAsBusiness(id: number) {
+  acting.update(() => [{ id, viaPlatform: false }]);
+  auth.update((prev) => [{ ...(prev[0] ?? { platform: true }), shop: true }]);
+}
+export const signOutShop = () => auth.update((prev) => [{ ...(prev[0] ?? { platform: true }), shop: false }]);
+export const signInPlatform = () => auth.update((prev) => [{ ...(prev[0] ?? { shop: true }), platform: true }]);
+export const signOutPlatform = () => auth.update((prev) => [{ ...(prev[0] ?? { shop: true }), platform: false }]);
+
 /** Platform admin -> "Log in as business". */
-export const actAsBusiness = (id: number) => acting.update(() => [{ id, viaPlatform: true }]);
+export function actAsBusiness(id: number) {
+  acting.update(() => [{ id, viaPlatform: true }]);
+  auth.update((prev) => [{ ...(prev[0] ?? { platform: true }), shop: true }]);
+}
 /** Back to the platform: the console belongs to its own business again. */
 export const stopActing = () => acting.update(() => [{ id: HOME_BUSINESS_ID, viaPlatform: false }]);
 

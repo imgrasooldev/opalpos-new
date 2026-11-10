@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { DemoGuide } from "@/components/demo/demo-guide";
 import { BRAND } from "@/lib/brand";
 
 /**
@@ -46,6 +47,8 @@ export default function RootLayout({
           to body before React loads — ignore mismatches on this one tag only */}
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <Providers>{children}</Providers>
+        {/* static demo build: a guide to the whole flow, with demo sign-ins */}
+        <DemoGuide />
       </body>
     </html>
   );

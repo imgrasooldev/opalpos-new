@@ -3,8 +3,10 @@
 /**
  * Logged-in console frame: dark sidebar + topbar + content area.
  *
- * Deliberately presentational — user/store come in as props, no data hooks
- * inside, so static demo pages and real (auth-guarded) pages can both use it.
+ * User and store come in as props. For the business console (no `nav`
+ * given) it also applies the demo subscription: only paid features in the
+ * menu, the blocked / locked screens, and who is signed in. Each console
+ * has its own demo sign-in; a signed-out console goes to its login page.
  *
  * It owns the sidebar state: the topbar's menu button collapses the sidebar to
  * an icon rail on desktop (remembered across visits) and opens it as a drawer
@@ -12,14 +14,26 @@
  */
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 
-import { featureForPath, stopActing, useBusinessAccess } from "@/components/platform/business-access";
+import { resetDemoData } from "@/components/inventory/demo-store";
+import { useHydrated } from "@/components/inventory/product-store";
+import {
+  HOME_BUSINESS_ID,
+  featureForPath,
+  signOutPlatform,
+  signOutShop,
+  stopActing,
+  useBusinessAccess,
+  useDemoAuth,
+} from "@/components/platform/business-access";
+import { subscriptionLabel } from "@/components/platform/platform-data";
 import { FeatureLocked, SubscriptionBlocked, SubscriptionNotice } from "@/components/platform/subscription-gate";
 import { BUSINESS_NAV, ConsoleSidebar, type NavItem } from "@/components/shell/console-sidebar";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Icon } from "@/components/ui/icon";
-import { ConsoleTopbar } from "@/components/shell/console-topbar";
+import { ConsoleTopbar, type UserMenuItem } from "@/components/shell/console-topbar";
 import { cn } from "@/lib/cn";
 
 const STORAGE_KEY = "opalpay.sidebar-collapsed";
@@ -94,8 +108,78 @@ export function ConsoleShell({
   );
   const blocked = isBusiness && access.status && ["Suspended", "Expired", "No plan"].includes(access.status.state);
   const locked = isBusiness && !blocked ? featureForPath(pathname) : null;
-  const shownStore =
-    isBusiness && access.viaPlatform && access.business ? { name: access.business.locationName || access.business.name, hint: access.business.name } : store;
+  // another business than the demo's own: show its location and owner
+  const other = isBusiness && access.business && access.business.id !== HOME_BUSINESS_ID ? access.business : null;
+  const shownStore = other ? { name: other.locationName || other.name, hint: other.name } : store;
+  const shownUser = other
+    ? {
+        name: other.ownerName,
+        role: "Owner",
+        initials: other.ownerName
+          .split(" ")
+          .map((w) => w[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase(),
+      }
+    : user;
+
+  const router = useRouter();
+  const hydrated = useHydrated();
+  const auth = useDemoAuth();
+  const signedOut = hydrated && (isBusiness ? !auth.shop : !auth.platform);
+  const [resetting, setResetting] = useState(false);
+  // a signed-out console sends you to its own login
+  useEffect(() => {
+    if (signedOut) router.replace(isBusiness ? "/login" : "/platform/login");
+  }, [signedOut, isBusiness, router]);
+
+  const userMenu: UserMenuItem[] = isBusiness
+    ? [
+        { label: "Subscription", icon: "card", onSelect: () => router.push("/settings/subscription") },
+        ...(access.viaPlatform && access.business
+          ? [
+              {
+                label: "Back to platform",
+                icon: "shield" as const,
+                onSelect: () => {
+                  const id = access.business?.id;
+                  stopActing();
+                  router.push(`/platform/businesses/${id}`);
+                },
+              },
+            ]
+          : []),
+        { label: "Reset demo data", icon: "refund", onSelect: () => setResetting(true), dividerBefore: true },
+        {
+          label: "Sign out",
+          icon: "login",
+          danger: true,
+          onSelect: () => {
+            signOutShop();
+            router.push("/login");
+          },
+        },
+      ]
+    : [
+        { label: "Platform settings", icon: "gear", onSelect: () => router.push("/platform/settings") },
+        { label: "Open the shop sign-in", icon: "store", onSelect: () => router.push("/login") },
+        { label: "Reset demo data", icon: "refund", onSelect: () => setResetting(true), dividerBefore: true },
+        {
+          label: "Sign out",
+          icon: "login",
+          danger: true,
+          onSelect: () => {
+            signOutPlatform();
+            router.push("/platform/login");
+          },
+        },
+      ];
+  const userDetail = isBusiness
+    ? access.business
+      ? `${access.business.name} · ${subscriptionLabel(access.sub, access.plans)}`
+      : undefined
+    : `${user.role} · ${store.name}`;
 
   // Escape closes the mobile drawer
   useEffect(() => {
@@ -119,7 +203,7 @@ export function ConsoleShell({
     <div className="flex min-h-screen flex-1 bg-surface">
       <ConsoleSidebar
         store={shownStore}
-        user={user}
+        user={shownUser}
         collapsed={collapsed}
         mobileOpen={mobileOpen}
         onExpand={() => writeCollapsed(false)}
@@ -142,10 +226,12 @@ export function ConsoleShell({
         <ConsoleTopbar
           section={section}
           store={shownStore}
-          user={user}
+          user={shownUser}
           today={today}
           sidebarCollapsed={collapsed}
           onToggleMenu={toggleMenu}
+          userMenu={userMenu}
+          userDetail={userDetail}
         />
         {isBusiness && access.viaPlatform && access.business && (
           <div className="flex flex-wrap items-center gap-3 bg-plum-600 px-5 py-2 text-[13px] text-white">
@@ -164,7 +250,9 @@ export function ConsoleShell({
         )}
         <main className="flex-1 p-5">
           {isBusiness && !blocked && <SubscriptionNotice access={access} />}
-          {blocked ? (
+          {signedOut ? (
+            <p className="py-20 text-center text-[13px] text-muted">Signed out. Taking you to the sign-in page…</p>
+          ) : blocked ? (
             <SubscriptionBlocked access={access} />
           ) : locked && !access.enabled.has(locked) ? (
             <FeatureLocked access={access} featureKey={locked} />
@@ -173,6 +261,20 @@ export function ConsoleShell({
           )}
         </main>
       </div>
+
+      {resetting && (
+        <ConfirmDialog
+          tone="warning"
+          title="Reset demo data?"
+          confirmLabel="Reset"
+          message="Every change made in this browser (sales, products, businesses, invoices, sign-ins…) is thrown away and the demo starts fresh."
+          onCancel={() => setResetting(false)}
+          onConfirm={() => {
+            resetDemoData();
+            window.location.href = isBusiness ? "/dashboard" : "/platform";
+          }}
+        />
+      )}
     </div>
   );
 }
