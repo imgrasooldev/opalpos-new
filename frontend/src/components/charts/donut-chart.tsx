@@ -26,6 +26,8 @@ type Props = {
   /** Beech mein — bara number aur uske neeche chhota label. */
   centerValue: string;
   centerLabel: string;
+  /** What the chart shows, for screen readers. */
+  label?: string;
   className?: string;
 };
 
@@ -33,6 +35,7 @@ export function DonutChart({
   segments,
   centerValue,
   centerLabel,
+  label = "Revenue breakdown",
   className,
 }: Props) {
   const total = segments.reduce((sum, segment) => sum + segment.value, 0) || 1;
@@ -58,7 +61,7 @@ export function DonutChart({
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         className="h-40 w-40"
         role="img"
-        aria-label={`Revenue breakdown: ${segments
+        aria-label={`${label}: ${segments
           .map((s) => `${s.label} ${Math.round((s.value / total) * 100)}%`)
           .join(", ")}`}
       >

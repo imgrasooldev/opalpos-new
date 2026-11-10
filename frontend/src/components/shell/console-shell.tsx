@@ -11,9 +11,14 @@
  * on mobile.
  */
 
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 
-import { ConsoleSidebar } from "@/components/shell/console-sidebar";
+import { featureForPath, stopActing, useBusinessAccess } from "@/components/platform/business-access";
+import { FeatureLocked, SubscriptionBlocked, SubscriptionNotice } from "@/components/platform/subscription-gate";
+import { BUSINESS_NAV, ConsoleSidebar, type NavItem } from "@/components/shell/console-sidebar";
+import { Icon } from "@/components/ui/icon";
 import { ConsoleTopbar } from "@/components/shell/console-topbar";
 import { cn } from "@/lib/cn";
 
@@ -55,6 +60,10 @@ type Props = {
   user: { name: string; role: string; initials: string };
   today: string;
   children: ReactNode;
+  /** The sidebar menu; the business console's by default. */
+  nav?: NavItem[];
+  /** Where the sidebar logo links to. */
+  homeHref?: string;
 };
 
 export function ConsoleShell({
@@ -63,9 +72,30 @@ export function ConsoleShell({
   user,
   today,
   children,
+  nav,
+  homeHref,
 }: Props) {
   const collapsed = useSyncExternalStore(subscribe, readCollapsed, () => false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+
+  // The business console (no `nav` given) shows only what the business paid
+  // for; the platform console passes its own menu and skips all of this.
+  const isBusiness = !nav;
+  const access = useBusinessAccess();
+  const businessNav = useMemo(
+    () =>
+      BUSINESS_NAV.map((item) =>
+        item.children
+          ? { ...item, children: item.children.filter((c) => { const f = featureForPath(c.href); return !f || access.enabled.has(f); }) }
+          : item,
+      ).filter((item) => !item.children || item.children.length > 0),
+    [access.enabled],
+  );
+  const blocked = isBusiness && access.status && ["Suspended", "Expired", "No plan"].includes(access.status.state);
+  const locked = isBusiness && !blocked ? featureForPath(pathname) : null;
+  const shownStore =
+    isBusiness && access.viaPlatform && access.business ? { name: access.business.locationName || access.business.name, hint: access.business.name } : store;
 
   // Escape closes the mobile drawer
   useEffect(() => {
@@ -88,12 +118,14 @@ export function ConsoleShell({
   return (
     <div className="flex min-h-screen flex-1 bg-surface">
       <ConsoleSidebar
-        store={store}
+        store={shownStore}
         user={user}
         collapsed={collapsed}
         mobileOpen={mobileOpen}
         onExpand={() => writeCollapsed(false)}
         onClose={() => setMobileOpen(false)}
+        nav={nav ?? businessNav}
+        homeHref={homeHref}
       />
 
       {/* mobile drawer backdrop */}
@@ -109,13 +141,37 @@ export function ConsoleShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <ConsoleTopbar
           section={section}
-          store={store}
+          store={shownStore}
           user={user}
           today={today}
           sidebarCollapsed={collapsed}
           onToggleMenu={toggleMenu}
         />
-        <main className="flex-1 p-5">{children}</main>
+        {isBusiness && access.viaPlatform && access.business && (
+          <div className="flex flex-wrap items-center gap-3 bg-plum-600 px-5 py-2 text-[13px] text-white">
+            <Icon name="shield" className="h-4 w-4" />
+            <span className="flex-1">
+              You&apos;re in <b>{access.business.name}</b>&apos;s console as a platform admin. Everything you do here is logged.
+            </span>
+            <Link
+              href={`/platform/businesses/${access.business.id}`}
+              onClick={() => stopActing()}
+              className="rounded-md bg-white/15 px-2.5 py-1 font-medium hover:bg-white/25"
+            >
+              Back to platform
+            </Link>
+          </div>
+        )}
+        <main className="flex-1 p-5">
+          {isBusiness && !blocked && <SubscriptionNotice access={access} />}
+          {blocked ? (
+            <SubscriptionBlocked access={access} />
+          ) : locked && !access.enabled.has(locked) ? (
+            <FeatureLocked access={access} featureKey={locked} />
+          ) : (
+            children
+          )}
+        </main>
       </div>
     </div>
   );

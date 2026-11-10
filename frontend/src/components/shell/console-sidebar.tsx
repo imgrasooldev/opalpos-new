@@ -11,7 +11,7 @@ import { cn } from "@/lib/cn";
 type NavLink = { label: string; href: string };
 
 /** An item with `href` is a plain link; one with `children` is an accordion group. */
-type NavItem = {
+export type NavItem = {
   label: string;
   icon: IconName;
   href?: string;
@@ -20,7 +20,7 @@ type NavItem = {
 
 // Order and sub-items match the old Opal POS sidebar, since users already know
 // that layout. Most routes don't exist yet; the links are placeholders.
-const NAV_ITEMS: NavItem[] = [
+export const BUSINESS_NAV: NavItem[] = [
   { label: "Home", href: "/dashboard", icon: "grid" },
   {
     label: "User Management",
@@ -140,25 +140,22 @@ const NAV_ITEMS: NavItem[] = [
  * The menu link that matches the current page. Nested pages (such as
  * `/users/create`) resolve to their parent link (`/users`). The longest match
  * wins, so `/products/create` doesn't light up both "List Products" and
- * "Add Product".
+ * "Add Product", and a home link like `/platform` doesn't light up on every
+ * page under it.
  */
-function activeHref(pathname: string) {
+function activeHref(nav: NavItem[], pathname: string) {
   let best: string | undefined;
-  for (const item of NAV_ITEMS) {
-    for (const child of item.children ?? []) {
-      const matches =
-        pathname === child.href || pathname.startsWith(`${child.href}/`);
-      if (matches && child.href.length > (best?.length ?? 0)) best = child.href;
-    }
+  const links = nav.flatMap((item) => (item.children ? item.children : item.href ? [{ label: item.label, href: item.href }] : []));
+  for (const link of links) {
+    const matches = pathname === link.href || pathname.startsWith(`${link.href}/`);
+    if (matches && link.href.length > (best?.length ?? 0)) best = link.href;
   }
   return best;
 }
 
 /** The group containing the current page starts out open. */
-function activeGroup(current: string | undefined) {
-  return NAV_ITEMS.find((item) =>
-    item.children?.some((child) => child.href === current),
-  )?.label;
+function activeGroup(nav: NavItem[], current: string | undefined) {
+  return nav.find((item) => item.children?.some((child) => child.href === current))?.label;
 }
 
 type Props = {
@@ -170,6 +167,10 @@ type Props = {
   mobileOpen: boolean;
   onExpand: () => void;
   onClose: () => void;
+  /** The menu; the business console's by default. */
+  nav?: NavItem[];
+  /** Where the logo links to. */
+  homeHref?: string;
 };
 
 export function ConsoleSidebar({
@@ -179,11 +180,13 @@ export function ConsoleSidebar({
   mobileOpen,
   onExpand,
   onClose,
+  nav = BUSINESS_NAV,
+  homeHref = "/dashboard",
 }: Props) {
   const pathname = usePathname();
-  const current = activeHref(pathname);
+  const current = activeHref(nav, pathname);
   // accordion: only one group open at a time, like the old sidebar
-  const [open, setOpen] = useState(() => activeGroup(current));
+  const [open, setOpen] = useState(() => activeGroup(nav, current));
 
   // rail styles use `lg:` so they never touch the mobile drawer
   const railHidden = collapsed && "lg:hidden";
@@ -212,7 +215,7 @@ export function ConsoleSidebar({
         )}
       >
         <Logo
-          href="/dashboard"
+          href={homeHref}
           tone="light"
           size="sm"
           // wordmark hidden in the rail, only the mark stays
@@ -229,9 +232,9 @@ export function ConsoleSidebar({
       </div>
 
       <nav className="scrollbar-none flex flex-1 flex-col gap-0.5 overflow-y-auto px-3">
-        {NAV_ITEMS.map((item) => {
+        {nav.map((item) => {
           if (!item.children) {
-            const active = pathname === item.href;
+            const active = current === item.href;
 
             return (
               <Link

@@ -51,7 +51,14 @@ export type IconName =
   | "chevron-left"
   | "lock"
   | "filter"
-  | "phone";
+  | "phone"
+  | "building"
+  | "layers"
+  | "card"
+  | "send"
+  | "shield"
+  | "check"
+  | "login";
 
 const PATHS: Record<IconName, ReactNode> = {
   mail: (
@@ -305,6 +312,48 @@ const PATHS: Record<IconName, ReactNode> = {
     </>
   ),
   filter: <path d="M4 5.5h16l-6.2 7.4v5.3l-3.6 1.8v-7.1Z" />,
+  building: (
+    <>
+      <path d="M4.5 20.5v-14l7-3v17" />
+      <path d="M11.5 8.5h8v12" />
+      <path d="M3 20.5h18" />
+      <path d="M7.5 9.5h1M7.5 13h1M7.5 16.5h1M14.5 12h1.5M14.5 15.5h1.5" />
+    </>
+  ),
+  layers: (
+    <>
+      <path d="m12 3.5 8.5 4.5-8.5 4.5L3.5 8 12 3.5Z" />
+      <path d="m3.5 12 8.5 4.5 8.5-4.5" />
+      <path d="m3.5 16 8.5 4.5 8.5-4.5" />
+    </>
+  ),
+  card: (
+    <>
+      <rect x="3" y="5.5" width="18" height="13" rx="2" />
+      <path d="M3 9.5h18" />
+      <path d="M6.5 15h3" />
+    </>
+  ),
+  send: (
+    <>
+      <path d="M20.5 3.5 10 14" />
+      <path d="m20.5 3.5-6.5 17-4-6.5-6.5-4 17-6.5Z" />
+    </>
+  ),
+  shield: (
+    <>
+      <path d="M12 3.5 5 6v5.5c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6l-7-2.5Z" />
+      <path d="m9 12 2 2 4-4" />
+    </>
+  ),
+  check: <path d="m5 12.5 4.5 4.5L19 7.5" />,
+  login: (
+    <>
+      <path d="M14 4h4.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H14" />
+      <path d="M10 8l4 4-4 4" />
+      <path d="M14 12H4" />
+    </>
+  ),
   phone: (
     <path d="M6.6 4h2.6l1.4 4-2 1.3a10.5 10.5 0 0 0 6.1 6.1l1.3-2 4 1.4v2.6A1.6 1.6 0 0 1 18.4 19 14.5 14.5 0 0 1 5 5.6 1.6 1.6 0 0 1 6.6 4Z" />
   ),
