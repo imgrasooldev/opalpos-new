@@ -28,9 +28,9 @@ const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" 
 const when = (iso: string | null) =>
   iso
     ? new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })
-    : "—";
+    : "-";
 const amountText = (d: Discount) => (d.type === "Percentage" ? `${d.amount}%` : USD.format(d.amount));
-const dash = <span className="text-muted">—</span>;
+const dash = <span className="text-muted">-</span>;
 
 export function DiscountsScreen() {
   const discounts = useDiscounts();

@@ -102,7 +102,7 @@ export function CommunicatorScreen() {
       .replaceAll("{business_name}", b.name)
       .replaceAll("{owner_name}", b.ownerName)
       .replaceAll("{plan}", subscriptionLabel(i?.sub, plans))
-      .replaceAll("{end_date}", i?.status.nextBilling ? fmtDate(i.status.nextBilling) : i?.sub ? fmtDate(i.sub.periodEnd) : "—");
+      .replaceAll("{end_date}", i?.status.nextBilling ? fmtDate(i.status.nextBilling) : i?.sub ? fmtDate(i.sub.periodEnd) : "-");
   };
 
   function pickAudience(a: Audience) {
@@ -308,7 +308,7 @@ export function CommunicatorScreen() {
 
         <Card title="Preview" action={<span className="text-xs text-muted">{first ? `As ${first.name} sees it` : "No recipients yet"}</span>} bodyClassName="border-t border-line pt-4">
           <div className="rounded-lg border border-line bg-surface p-4 text-[13px]">
-            <p className="text-xs text-muted">To: {first ? `${first.ownerName} <${first.ownerEmail}>` : "—"}</p>
+            <p className="text-xs text-muted">To: {first ? `${first.ownerName} <${first.ownerEmail}>` : "-"}</p>
             <p className="mt-2 font-semibold">{fill(subject, first) || "Subject"}</p>
             <p className="mt-2 whitespace-pre-line text-muted">{fill(body, first) || "Your message shows here, with the placeholders filled in."}</p>
           </div>

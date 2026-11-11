@@ -92,7 +92,7 @@ export function AdjustmentsScreen() {
       label: "Reason",
       sortValue: (a) => a.reason,
       text: (a) => a.reason,
-      render: (a) => (a.reason ? <span className="block max-w-60 truncate" title={a.reason}>{a.reason}</span> : <span className="text-muted">—</span>),
+      render: (a) => (a.reason ? <span className="block max-w-60 truncate" title={a.reason}>{a.reason}</span> : <span className="text-muted">-</span>),
     },
     { key: "addedBy", label: "Added by", sortValue: (a) => a.addedBy, text: (a) => a.addedBy },
   ];
@@ -239,7 +239,7 @@ function ViewDialog({ adjustment: a, autoPrint, onClose }: { adjustment: StockAd
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <p className="text-[13px]">
-          <span className="text-muted">Reason:</span> {a.reason || "—"}
+          <span className="text-muted">Reason:</span> {a.reason || "-"}
         </p>
         <dl className="grid grid-cols-2 gap-y-1 text-[13px]">
           <dt className="text-muted">Total amount:</dt>

@@ -7,6 +7,8 @@
  *   - usage against its limits
  *   - change the plan, add or drop features, extras, billing cycle and
  *     payment method (the next invoice changes), or stop auto renewal
+ *   - the card renewals are charged to, with "Update card"; switching to
+ *     card payments asks for a card first
  *   - its invoices: pay an open one by card, view or print a receipt
  *
  * Everything here writes to the same data the platform admin reads, so a
@@ -16,6 +18,7 @@
 import { useState, type ReactNode } from "react";
 
 import { InvoiceDialog } from "@/components/platform/billing-screen";
+import { CardSummary, UpdateCardDialog } from "@/components/platform/card-fields";
 import { useBusinessAccess } from "@/components/platform/business-access";
 import {
   STATE_TONE,
@@ -53,6 +56,8 @@ export function ShopSubscription() {
   const [viewing, setViewing] = useState<number | null>(null);
   const [confirm, setConfirm] = useState<ConfirmOptions | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
+  /** "update": change the card; "apply": a card is needed before saving the changes. */
+  const [cardFor, setCardFor] = useState<"update" | "apply" | null>(null);
 
   if (!hydrated) return <p className="py-10 text-center text-[13px] text-muted">Loading…</p>;
   const { business: b, sub, status, plans, features, invoices } = access;
@@ -74,9 +79,11 @@ export function ShopSubscription() {
   const newTotal = linesTotal(priceLines(d, plans, features));
   const empty = d.planId === null && d.addOns.length === 0;
 
-  function apply() {
+  function apply(card = sub?.card ?? null) {
     if (empty || !sub) return;
-    updateSubscriptions((prev) => prev.map((s) => (s.businessId === sub.businessId ? { ...s, ...d, customPrice: s.customPrice } : s)));
+    // paying by card needs a card on file first
+    if (d.method === "Card" && !card) return setCardFor("apply");
+    updateSubscriptions((prev) => prev.map((s) => (s.businessId === sub.businessId ? { ...s, ...d, customPrice: s.customPrice, card } : s)));
     setSaved(`Saved. Your next invoice${status?.nextBilling ? ` on ${fmtDate(status.nextBilling)}` : ""} is ${USD.format(newTotal)}.`);
     setDraft(null);
   }
@@ -101,6 +108,16 @@ export function ShopSubscription() {
               <Row label="Billing">
                 {sub.cycle} · {sub.method}
               </Row>
+              {sub.method === "Card" && (
+                <Row label="Card">
+                  <span className="inline-flex flex-wrap items-center justify-end gap-2">
+                    {sub.card ? <CardSummary card={sub.card} /> : <span className="text-rose-600">No card on file</span>}
+                    <button type="button" onClick={() => setCardFor("update")} className="rounded-md border border-line px-2 py-0.5 text-xs font-medium hover:bg-surface">
+                      {sub.card ? "Update" : "Add card"}
+                    </button>
+                  </span>
+                </Row>
+              )}
               <Row label={status.inTrial ? "Free trial" : "This period"}>
                 {status.inTrial ? `until ${fmtDate(sub.trialEndDate)} (${days(daysBetween(on, sub.trialEndDate) + 1)} left)` : `${fmtDate(sub.periodStart)} - ${fmtDate(sub.periodEnd)}`}
               </Row>
@@ -196,7 +213,7 @@ export function ShopSubscription() {
             <Button type="button" variant="secondary" className="flex-1 justify-center" disabled={!changed} onClick={() => setDraft(null)}>
               Undo
             </Button>
-            <Button type="button" variant="brand" className="flex-1 justify-center" disabled={!changed || empty} onClick={apply}>
+            <Button type="button" variant="brand" className="flex-1 justify-center" disabled={!changed || empty} onClick={() => apply()}>
               Save changes
             </Button>
           </div>
@@ -259,6 +276,20 @@ export function ShopSubscription() {
       </Card>
 
       {viewing !== null && own.find((i) => i.id === viewing) && <InvoiceDialog invoice={own.find((i) => i.id === viewing)!} onClose={() => setViewing(null)} />}
+      {cardFor && (
+        <UpdateCardDialog
+          title={cardFor === "apply" ? "Add a card to pay by card" : sub.card ? "Update card" : "Add card"}
+          onClose={() => setCardFor(null)}
+          onSave={(card) => {
+            if (cardFor === "apply") apply(card);
+            else {
+              updateSubscriptions((prev) => prev.map((s) => (s.businessId === sub.businessId ? { ...s, card } : s)));
+              setSaved(`Card ${card.brand} •••• ${card.last4} saved; renewals are charged to it.`);
+            }
+            setCardFor(null);
+          }}
+        />
+      )}
       {confirm && (
         <ConfirmDialog
           {...confirm}

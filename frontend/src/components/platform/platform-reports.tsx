@@ -158,7 +158,7 @@ export function PlatformReports() {
       label: "Renewals paid",
       sortValue: (m) => m.renewPaid,
       text: (m) => `${m.renewPaid}/${m.renewIssued}`,
-      render: (m) => (m.renewIssued ? <span className="tabular-nums">{m.renewPaid} of {m.renewIssued}</span> : <span className="text-muted">—</span>),
+      render: (m) => (m.renewIssued ? <span className="tabular-nums">{m.renewPaid} of {m.renewIssued}</span> : <span className="text-muted">-</span>),
       align: "right",
     },
   ];

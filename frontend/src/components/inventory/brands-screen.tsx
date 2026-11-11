@@ -40,7 +40,7 @@ export function BrandsScreen() {
       label: "Note",
       sortValue: (b) => b.note,
       text: (b) => b.note,
-      render: (b) => b.note || <span className="text-muted">—</span>,
+      render: (b) => b.note || <span className="text-muted">-</span>,
     },
     {
       key: "products",

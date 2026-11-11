@@ -587,7 +587,7 @@ function ProductFormFields({
                   ? "Can't be changed once the product exists."
                   : type === "Single"
                   ? "One price and one stock count."
-                  : "Sizes, colors or flavors — each with its own SKU and price."
+                  : "Sizes, colors or flavors, each with its own SKU and price."
               }
             />
           </div>

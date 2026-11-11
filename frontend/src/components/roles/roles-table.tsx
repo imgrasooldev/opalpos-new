@@ -155,7 +155,7 @@ export function RolesTable({ roles }: { roles: DemoRole[] }) {
                     {role.system ? (
                       // system roles can be viewed, never changed
                       <span
-                        title="System role — can't be changed"
+                        title="System role, can't be changed"
                         className="rounded-lg p-1.5 text-muted"
                       >
                         <Icon name="lock" className="h-4 w-4" />

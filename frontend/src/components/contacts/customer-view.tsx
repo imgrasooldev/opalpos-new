@@ -246,7 +246,7 @@ function LedgerTab({ customer, ledger }: { customer: DemoCustomer; ledger: Ledge
           <span className="text-xs font-medium text-muted">Date range</span>
           <div className="flex items-center gap-2">
             <DateInput label="From" value={from} onChange={setFrom} />
-            <span className="text-muted">–</span>
+            <span className="text-muted">-</span>
             <DateInput label="To" value={to} onChange={setTo} />
           </div>
         </div>
@@ -321,7 +321,7 @@ function LedgerTab({ customer, ledger }: { customer: DemoCustomer; ledger: Ledge
           <div className="flex items-baseline justify-between gap-3 bg-surface px-4 py-2.5">
             <p className="text-[13px] font-semibold">Account summary</p>
             <p className="text-xs text-muted">
-              {day(from)} – {day(to)}
+              {day(from)} - {day(to)}
             </p>
           </div>
           <dl className="divide-y divide-line px-4 text-[13px]">

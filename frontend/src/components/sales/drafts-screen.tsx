@@ -39,7 +39,7 @@ import { cn } from "@/lib/cn";
 const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const day = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 const time = (iso: string) => new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-const dash = <span className="text-muted">—</span>;
+const dash = <span className="text-muted">-</span>;
 const fieldClass =
   "w-full rounded-lg border bg-background py-2 text-[13px] outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25";
 

@@ -249,7 +249,7 @@ export function PlatformDashboard() {
                       <span className="block text-xs text-muted">{b.ownerEmail}</span>
                     </td>
                     <td className="px-4 py-2.5">
-                      <span className="mr-2">{sub ? subscriptionLabel(sub, plans) : "—"}</span>
+                      <span className="mr-2">{sub ? subscriptionLabel(sub, plans) : "-"}</span>
                       <Badge tone={STATE_TONE[status.state]}>{status.state}</Badge>
                     </td>
                     <td className="px-5 py-2.5 text-right text-muted">{fmtDate(b.createdAt)}</td>

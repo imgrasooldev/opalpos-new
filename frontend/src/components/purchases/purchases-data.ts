@@ -110,7 +110,7 @@ export const DEMO_PURCHASES: Purchase[] = [
     discountType: "None",
     discountAmount: 0,
     tax: "Sales tax 8.25%",
-    shippingDetails: "Fragile — freight",
+    shippingDetails: "Fragile, freight",
     shipping: 15,
     expenses: [],
     notes: "",

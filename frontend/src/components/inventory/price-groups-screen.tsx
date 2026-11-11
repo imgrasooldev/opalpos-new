@@ -74,13 +74,13 @@ export function PriceGroupsScreen() {
     const rows = parseCsv(await file.text());
     const header = rows[0]?.map((h) => h.trim().toLowerCase()) ?? [];
     const skuCol = header.indexOf("sku");
-    if (skuCol === -1) return setResult({ ok: false, text: "That file has no SKU column — import the exported file." });
+    if (skuCol === -1) return setResult({ ok: false, text: "That file has no SKU column. Import the exported file." });
     // group columns are matched by name
     const groupCols = groups
       .map((g) => ({ group: g, col: header.indexOf(g.name.toLowerCase()) }))
       .filter((x) => x.col !== -1);
     if (groupCols.length === 0)
-      return setResult({ ok: false, text: "No price group columns found — export again after adding groups." });
+      return setResult({ ok: false, text: "No price group columns found. Export again after adding groups." });
 
     let updated = 0;
     const unknown: string[] = [];
@@ -141,7 +141,7 @@ export function PriceGroupsScreen() {
       label: "Description",
       sortValue: (g) => g.description,
       text: (g) => g.description,
-      render: (g) => g.description || <span className="text-muted">—</span>,
+      render: (g) => g.description || <span className="text-muted">-</span>,
     },
   ];
 

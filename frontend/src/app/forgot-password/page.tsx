@@ -12,7 +12,7 @@ export default function ForgotPasswordPage() {
   return (
     <AuthLayout
       title="Reset your password"
-      description="Happens to everyone — one email and you're back in"
+      description="Happens to everyone. One email and you're back in"
     >
       <ForgotPasswordForm />
 

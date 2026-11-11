@@ -64,14 +64,14 @@ export function CategoriesScreen() {
       label: "Category code",
       sortValue: (c) => c.code,
       text: (c) => c.code,
-      render: (c) => (c.code ? <span className="font-mono text-xs">{c.code}</span> : <span className="text-muted">—</span>),
+      render: (c) => (c.code ? <span className="font-mono text-xs">{c.code}</span> : <span className="text-muted">-</span>),
     },
     {
       key: "description",
       label: "Description",
       sortValue: (c) => c.description,
       text: (c) => c.description,
-      render: (c) => c.description || <span className="text-muted">—</span>,
+      render: (c) => c.description || <span className="text-muted">-</span>,
     },
     {
       key: "products",

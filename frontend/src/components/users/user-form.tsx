@@ -106,7 +106,7 @@ export function UserForm({ user }: { user?: DemoUser }) {
           className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200"
         >
           <Icon name="alert" className="h-4 w-4" />
-          {editing ? "Changes look good" : "Looks good"} — this is a demo screen,
+          {editing ? "Changes look good" : "Looks good"}. This is a demo screen,
           so nothing was sent to the server yet.
         </div>
       )}
@@ -158,10 +158,10 @@ export function UserForm({ user }: { user?: DemoUser }) {
             label="Role *"
             hint={
               isCashier
-                ? "Cashiers open the POS with a 4 digit PIN — no web login."
+                ? "Cashiers open the POS with a 4 digit PIN, no web login."
                 : isAdmin
                   ? "Admins have full access to every screen."
-                  : "Permissions come from the role — edit them under Roles."
+                  : "Permissions come from the role. Edit them under Roles."
             }
             value={role}
             onChange={(next) => setRole(next as RoleName)}

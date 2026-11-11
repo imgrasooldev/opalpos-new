@@ -45,7 +45,7 @@ export function Hero() {
           </h1>
 
           <p className="mt-6 max-w-md text-[17px] leading-7 text-white/65">
-            Sales, inventory and insights — all in one place
+            Sales, inventory and insights, all in one place
           </p>
 
           <div className="mt-9 flex flex-wrap gap-4">

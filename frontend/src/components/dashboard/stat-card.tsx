@@ -42,7 +42,7 @@ export function StatCard({ stat }: { stat: Stat }) {
                 className="h-3.5 w-3.5"
               />
             )}
-            {delta.direction === "flat" && <span aria-hidden>—</span>}
+            {delta.direction === "flat" && <span aria-hidden>-</span>}
             {delta.value}
           </span>
           <span className="text-muted">vs previous 30 days</span>

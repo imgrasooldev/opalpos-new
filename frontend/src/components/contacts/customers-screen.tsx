@@ -51,7 +51,7 @@ const DATE = new Intl.DateTimeFormat("en-US", {
 const sum = (rows: DemoCustomer[], pick: (c: DemoCustomer) => number) =>
   rows.reduce((total, c) => total + pick(c), 0);
 
-const dash = <span className="text-muted">—</span>;
+const dash = <span className="text-muted">-</span>;
 
 const COLUMNS: DataColumn<DemoCustomer>[] = [
   {

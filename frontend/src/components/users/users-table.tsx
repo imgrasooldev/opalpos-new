@@ -75,7 +75,7 @@ const COLUMNS: DataColumn<DemoUser>[] = [
           {u.assignedAdmin}
         </span>
       ) : (
-        <span className="text-muted">—</span>
+        <span className="text-muted">-</span>
       ),
   },
 ];

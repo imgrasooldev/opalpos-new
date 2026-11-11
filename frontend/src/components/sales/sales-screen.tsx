@@ -55,7 +55,7 @@ const when = (iso: string) =>
 const day = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 const time = (iso: string) => new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 const STATUS_TONE = { Paid: "green", Partial: "amber", Due: "rose" } as const;
-const dash = <span className="text-muted">—</span>;
+const dash = <span className="text-muted">-</span>;
 
 /** "Paid - 2 · Partial - 1", like the old totals row. */
 const counts = (values: (string | null)[]) =>
@@ -604,7 +604,7 @@ function ViewDialog({
                 <td className="px-3 py-2 text-right tabular-nums">{l.qty.toFixed(2)}</td>
                 <td className="px-3 py-2 text-right tabular-nums">{USD.format(l.unitPrice)}</td>
                 <td className="px-3 py-2 text-right tabular-nums">
-                  {l.discount ? (l.discountType === "Percentage" ? `${l.discount}%` : USD.format(l.discount)) : "—"}
+                  {l.discount ? (l.discountType === "Percentage" ? `${l.discount}%` : USD.format(l.discount)) : "-"}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums">{USD.format(netUnitPrice(l))}</td>
                 <td className="px-3 py-2 text-right font-medium tabular-nums">{USD.format(lineSubtotal(l))}</td>

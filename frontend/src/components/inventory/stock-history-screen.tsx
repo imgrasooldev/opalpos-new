@@ -27,7 +27,7 @@ const DATE_TIME = new Intl.DateTimeFormat("en-US", {
   minute: "2-digit",
 });
 const when = (iso: string) => DATE_TIME.format(new Date(iso));
-const dash = <span className="text-muted">—</span>;
+const dash = <span className="text-muted">-</span>;
 
 export function StockHistoryScreen({ id }: { id: number }) {
   const hydrated = useHydrated();

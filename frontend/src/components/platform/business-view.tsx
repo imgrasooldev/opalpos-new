@@ -17,6 +17,7 @@ import { useState, type ReactNode } from "react";
 
 import { actAsBusiness } from "@/components/platform/business-access";
 import { InvoiceDialog, PaymentDialog } from "@/components/platform/billing-screen";
+import { CardSummary } from "@/components/platform/card-fields";
 import { SuspendDialog } from "@/components/platform/businesses-screen";
 import { useHydrated } from "@/components/inventory/product-store";
 import {
@@ -205,6 +206,9 @@ export function BusinessView({ id }: { id: number }) {
                   <Item label="Billing">
                     {sub.cycle} · {sub.method}
                   </Item>
+                  {sub.method === "Card" && (
+                    <Item label="Card on file">{sub.card ? <CardSummary card={sub.card} /> : <span className="text-rose-600">None</span>}</Item>
+                  )}
                   <Item label={status.inTrial ? "Free trial" : "Current period"}>
                     {status.inTrial ? `until ${fmtDate(sub.trialEndDate)} (${days(daysBetween(on, sub.trialEndDate) + 1)} left)` : `${fmtDate(sub.periodStart)} - ${fmtDate(sub.periodEnd)}`}
                   </Item>
@@ -278,7 +282,7 @@ export function BusinessView({ id }: { id: number }) {
                   {b.ownerEmail}
                 </a>
               </Item>
-              <Item label="Mobile">{b.ownerMobile || "—"}</Item>
+              <Item label="Mobile">{b.ownerMobile || "-"}</Item>
               <Item label="Username">
                 <span className="font-mono">{b.username}</span>
               </Item>

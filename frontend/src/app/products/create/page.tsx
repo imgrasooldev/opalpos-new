@@ -27,7 +27,7 @@ export default function AddProductPage() {
           </Link>
           <h1 className="mt-2 text-xl font-semibold tracking-tight">Add new product</h1>
           <p className="mt-1 text-[13px] text-muted">
-            Details, pricing and shelf location — opening stock comes next.
+            Details, pricing and shelf location. Opening stock comes next.
           </p>
         </div>
 

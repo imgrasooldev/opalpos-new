@@ -94,7 +94,7 @@ export function PurchaseReturnsScreen() {
       label: "Parent purchase",
       sortValue: (r) => r.parentRef ?? "",
       text: (r) => r.parentRef ?? "",
-      render: (r) => (r.parentRef ? <span className="font-mono text-[12.5px]">{r.parentRef}</span> : <span className="text-muted">—</span>),
+      render: (r) => (r.parentRef ? <span className="font-mono text-[12.5px]">{r.parentRef}</span> : <span className="text-muted">-</span>),
     },
     { key: "location", label: "Location", sortValue: (r) => r.location, text: (r) => r.location },
     { key: "supplier", label: "Supplier", sortValue: supplierName, text: supplierName },
@@ -313,7 +313,7 @@ function ViewDialog({ ret: r, supplier, onClose }: { ret: PurchaseReturn; suppli
         </div>
         <div>
           <p className="text-xs text-muted">Parent purchase</p>
-          <p className="font-mono">{r.parentRef ?? "—"}</p>
+          <p className="font-mono">{r.parentRef ?? "-"}</p>
           <p className="mt-2 text-xs text-muted">Added by</p>
           <p>{r.addedBy}</p>
         </div>

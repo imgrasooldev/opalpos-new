@@ -72,7 +72,7 @@ export function SellReturnsScreen() {
     return customers.find((c) => c.id === sale?.customerId)?.name ?? "Unknown customer";
   };
   const customerOf = (r: SellReturn) => customers.find((c) => c.id === saleOf(r)?.customerId);
-  const locationOf = (r: SellReturn) => saleOf(r)?.location ?? "—";
+  const locationOf = (r: SellReturn) => saleOf(r)?.location ?? "-";
   const active = Object.entries(filters).filter(([k, v]) => v !== NO_FILTERS[k as keyof Filters]).length;
 
   const rows = useMemo(
@@ -282,7 +282,7 @@ export function SellReturnsScreen() {
           info={[
             [
               ["Customer", customerName(paying)],
-              ["Business", customerOf(paying)?.businessName ?? "—"],
+              ["Business", customerOf(paying)?.businessName ?? "-"],
             ],
             [
               ["Invoice no", paying.ref],
@@ -290,7 +290,7 @@ export function SellReturnsScreen() {
             ],
             [
               ["Total amount", USD.format(sellReturnTotals(paying).total)],
-              ["Payment note", paying.refunds.at(-1)?.note || "—"],
+              ["Payment note", paying.refunds.at(-1)?.note || "-"],
             ],
           ]}
           advance={customerOf(paying)?.advanceBalance ?? 0}
@@ -414,14 +414,14 @@ function ViewDialog({
           <p className="mb-1.5 text-sm font-semibold">Sell return details</p>
           <Info label="Return date">{day(r.date)}</Info>
           <Info label="Customer">{customer}</Info>
-          <Info label="Business location">{sale?.location ?? "—"}</Info>
+          <Info label="Business location">{sale?.location ?? "-"}</Info>
         </div>
         <div>
           <p className="mb-1.5 text-sm font-semibold">Sale details</p>
           <Info label="Invoice no">
             <span className="font-mono">{sale?.invoiceNo ?? "Deleted"}</span>
           </Info>
-          <Info label="Date">{sale ? day(sale.date) : "—"}</Info>
+          <Info label="Date">{sale ? day(sale.date) : "-"}</Info>
         </div>
       </div>
 
@@ -486,7 +486,7 @@ function ViewDialog({
                 </td>
                 <td className="px-3 py-2">{a.action}</td>
                 <td className="px-3 py-2">{a.by}</td>
-                <td className="px-3 py-2 text-muted">{a.note || "—"}</td>
+                <td className="px-3 py-2 text-muted">{a.note || "-"}</td>
               </tr>
             ))}
           </tbody>

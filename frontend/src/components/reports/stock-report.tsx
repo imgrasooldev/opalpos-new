@@ -173,9 +173,9 @@ function StockTab() {
         </Link>
       ),
     },
-    { key: "variation", label: "Variation", sortValue: (r) => r.variation, text: (r) => r.variation, render: (r) => r.variation || <span className="text-muted">—</span> },
-    { key: "category", label: "Category", sortValue: (r) => r.category, text: (r) => r.category, render: (r) => r.category || <span className="text-muted">—</span> },
-    { key: "location", label: "Location", sortValue: (r) => r.location, text: (r) => r.location, render: (r) => r.location || <span className="text-muted">—</span> },
+    { key: "variation", label: "Variation", sortValue: (r) => r.variation, text: (r) => r.variation, render: (r) => r.variation || <span className="text-muted">-</span> },
+    { key: "category", label: "Category", sortValue: (r) => r.category, text: (r) => r.category, render: (r) => r.category || <span className="text-muted">-</span> },
+    { key: "location", label: "Location", sortValue: (r) => r.location, text: (r) => r.location, render: (r) => r.location || <span className="text-muted">-</span> },
     { key: "price", label: "Unit selling price", sortValue: (r) => r.sellingPrice, text: (r) => r.sellingPrice.toFixed(2), render: (r) => <span className="tabular-nums">{money(r.sellingPrice)}</span>, align: "right" },
     {
       key: "stock",
@@ -342,7 +342,7 @@ function AdjustmentTab() {
       align: "right",
       total: (list) => <span className="tabular-nums">{money(list.reduce((t, a) => t + a.recovered, 0))}</span>,
     },
-    { key: "reason", label: "Reason", sortValue: (a) => a.reason, text: (a) => a.reason, render: (a) => a.reason || <span className="text-muted">—</span> },
+    { key: "reason", label: "Reason", sortValue: (a) => a.reason, text: (a) => a.reason, render: (a) => a.reason || <span className="text-muted">-</span> },
     { key: "addedBy", label: "Added by", sortValue: (a) => a.addedBy, text: (a) => a.addedBy },
   ];
 

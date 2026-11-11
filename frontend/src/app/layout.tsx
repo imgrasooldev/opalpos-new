@@ -26,11 +26,11 @@ const mono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: `${BRAND.name} — ${BRAND.tagline}`,
+    default: `${BRAND.name} | ${BRAND.tagline}`,
     // page apna chhota title de, brand yahan se lag jayega
     template: `%s · ${BRAND.name}`,
   },
-  description: "Sales, inventory and insights — all in one place.",
+  description: "Sales, inventory and insights, all in one place.",
 };
 
 export default function RootLayout({

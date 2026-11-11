@@ -18,7 +18,7 @@ export default function VariationsPage() {
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Variations</h1>
           <p className="mt-1 text-[13px] text-muted">
-            Manage product variations — reusable lists like colors or sizes.
+            Manage product variations: reusable lists like colors or sizes.
           </p>
         </div>
 

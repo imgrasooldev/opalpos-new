@@ -563,7 +563,7 @@ function ReviewDialog({ parsed, onClose, onDone }: { parsed: Parsed; onClose: ()
             {parsed.headers.map((h, i) => (
               <tr key={i} className="border-b border-line last:border-0">
                 <td className="px-3 py-1.5 font-medium">{h || `Column ${i + 1}`}</td>
-                <td className="max-w-48 truncate px-3 py-1.5 text-muted">{parsed.rows[0][i] || "—"}</td>
+                <td className="max-w-48 truncate px-3 py-1.5 text-muted">{parsed.rows[0][i] || "-"}</td>
                 <td className="px-3 py-1.5">
                   <select
                     aria-label={`Field for ${h}`}
@@ -612,7 +612,7 @@ function ReviewDialog({ parsed, onClose, onDone }: { parsed: Parsed; onClose: ()
                     )}
                   </td>
                   <td className="px-3 py-2 text-muted">{p.date.replace("T", " ")}</td>
-                  <td className="px-3 py-2">{p.lines.map((l) => `${l.name} × ${l.qty}`).join(", ") || "—"}</td>
+                  <td className="px-3 py-2">{p.lines.map((l) => `${l.name} × ${l.qty}`).join(", ") || "-"}</td>
                   <td className="px-3 py-2 text-right font-medium tabular-nums">{USD.format(t.total)}</td>
                   <td className="px-3 py-2">
                     {p.errors.length ? (

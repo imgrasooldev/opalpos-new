@@ -111,7 +111,7 @@ export function PurchasePaymentReport() {
             <span className="block text-xs text-muted">{p.supplier.businessName}</span>
           </span>
         ) : (
-          <span className="text-muted">—</span>
+          <span className="text-muted">-</span>
         ),
     },
     {
@@ -291,7 +291,7 @@ function ViewPaymentDialog({ payment: p, onClose }: { payment: PaymentRow; onClo
         </div>
         <div className="sm:col-span-2">
           <dt className="inline font-medium">Payment note: </dt>
-          <dd className="inline text-muted">{p.note || "—"}</dd>
+          <dd className="inline text-muted">{p.note || "-"}</dd>
         </div>
         <div className="sm:col-span-2">
           <dt className="inline font-medium">Purchase: </dt>

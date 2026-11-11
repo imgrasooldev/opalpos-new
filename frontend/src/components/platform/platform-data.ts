@@ -45,7 +45,7 @@ export const daysBetween = (a: string, b: string) =>
 export const days = (n: number) => `${n} day${Math.abs(n) === 1 ? "" : "s"}`;
 
 export const fmtDate = (d: string | null | undefined) =>
-  d ? new Date(`${d.slice(0, 10)}T00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+  d ? new Date(`${d.slice(0, 10)}T00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
 
 export const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 
@@ -220,6 +220,12 @@ export const updateBusinesses = businesses.update;
 export const PAY_METHODS = ["Card", "Bank transfer", "Cash"] as const;
 export type PayMethod = (typeof PAY_METHODS)[number];
 
+/**
+ * The card a business pays with. Only what's safe to keep is stored: the
+ * full number and CVC go to the payment provider (Stripe), never here.
+ */
+export type CardOnFile = { brand: string; last4: string; expMonth: number; expYear: number; holder: string };
+
 /** What one business has bought. A business has at most one. */
 export type Subscription = {
   businessId: number;
@@ -243,6 +249,8 @@ export type Subscription = {
   customPrice: number | null;
   /** When auto renewal was switched off. */
   cancelledAt: string;
+  /** The card renewals are charged to, when paying by card. */
+  card?: CardOnFile | null;
 };
 
 // the subscription store is created below, once the seeds are built
@@ -389,6 +397,16 @@ function buildSeeds() {
       startDate: dayFrom(-trialDays, firstStart),
       trialEndDate: trialDays ? dayFrom(-1, firstStart) : "",
       periodEnd: periodEndFor(s.periodStart, s.cycle),
+      card:
+        s.method === "Card"
+          ? {
+              brand: s.businessId % 3 === 0 ? "Mastercard" : "Visa",
+              last4: String(4242 + s.businessId * 1117).slice(-4),
+              expMonth: ((s.businessId * 5) % 12) + 1,
+              expYear: 2027 + (s.businessId % 3),
+              holder: DEMO_BUSINESSES.find((b) => b.id === s.businessId)?.ownerName ?? "",
+            }
+          : null,
     };
     subs.push(sub);
     periods.forEach((start, i) => {
@@ -426,7 +444,7 @@ const SEEDED = buildSeeds();
 export const DEMO_SUBSCRIPTIONS = SEEDED.subs;
 export const DEMO_INVOICES = SEEDED.invoices;
 
-const subscriptionStore = createDemoStore<Subscription>("opalpay.platform-subscriptions-v2", DEMO_SUBSCRIPTIONS);
+const subscriptionStore = createDemoStore<Subscription>("opalpay.platform-subscriptions-v3", DEMO_SUBSCRIPTIONS);
 export const useSubscriptions = subscriptionStore.use;
 export const updateSubscriptions = subscriptionStore.update;
 

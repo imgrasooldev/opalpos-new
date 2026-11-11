@@ -1,10 +1,12 @@
 "use client";
 
 /**
- * Register Business (shop self sign-up), in three steps:
+ * Register Business (shop self sign-up), in four steps:
  *   1. the business and its first location
  *   2. the owner's login
  *   3. a plan, billed monthly or yearly, starting with its free trial
+ *   4. payment: card details (charged after the trial), or bank transfer /
+ *      cash with the platform's payment instructions, and the terms
  *
  * DEMO: it creates the business and its subscription in the platform data,
  * signs the owner in and opens the console. The platform admin sees the new
@@ -17,6 +19,7 @@ import { useState, type ReactNode } from "react";
 
 import { DEMO_PASSWORD } from "@/components/auth/login-form";
 import { Logo } from "@/components/brand/logo";
+import { CardFields, EMPTY_CARD, toCardOnFile, validateCard, type CardInput } from "@/components/platform/card-fields";
 import { signInAsBusiness } from "@/components/platform/business-access";
 import {
   COUNTRIES,
@@ -45,7 +48,8 @@ import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const STEPS = ["Business", "Your login", "Plan"] as const;
+const STEPS = ["Business", "Your login", "Plan", "Payment"] as const;
+const LAST = STEPS.length - 1;
 
 export function RegisterBusinessForm() {
   const router = useRouter();
@@ -81,6 +85,8 @@ export function RegisterBusinessForm() {
     .map(([m]) => m as PayMethod);
   const [method, setMethod] = useState<PayMethod>(methods[0] ?? "Card");
   const [agree, setAgree] = useState(false);
+  const [card, setCard] = useState<CardInput>(EMPTY_CARD);
+  const [cardErrors, setCardErrors] = useState<Partial<Record<keyof CardInput, string>>>({});
 
   const choices = plans.filter((p) => p.active && !p.isPrivate).sort((a, b) => a.sortOrder - b.sortOrder);
   const plan = choices.find((p) => p.id === planId) ?? choices[0];
@@ -114,16 +120,22 @@ export function RegisterBusinessForm() {
       if (password.length < 8) next.password = "At least 8 characters";
       else if (password !== confirm) next.confirm = "Passwords don't match";
     }
-    if (s === 2) {
-      if (!plan) next.plan = "Pick a plan";
+    let cardOk = true;
+    if (s === 2 && !plan) next.plan = "Pick a plan";
+    if (s === 3) {
       if (!agree) next.agree = "Accept the terms to continue";
+      if (method === "Card") {
+        const ce = validateCard(card);
+        setCardErrors(ce);
+        cardOk = Object.keys(ce).length === 0;
+      }
     }
     setErrors(next);
-    return Object.keys(next).length === 0;
+    return Object.keys(next).length === 0 && cardOk;
   }
 
   function finish() {
-    if (!check(2) || !plan) return;
+    if (!check(LAST) || !plan) return;
     const id = Math.max(0, ...businesses.map((b) => b.id)) + 1;
     const start = today();
     const first = plan.trialDays ? dayFrom(plan.trialDays, start) : start;
@@ -170,6 +182,7 @@ export function RegisterBusinessForm() {
         autoRenew: true,
         customPrice: null,
         cancelledAt: "",
+        card: method === "Card" ? toCardOnFile(card) : null,
       },
     ]);
     signInAsBusiness(id);
@@ -178,9 +191,10 @@ export function RegisterBusinessForm() {
 
   return (
     <Shell>
-      <ol className="mb-6 flex items-center gap-2 text-xs">
+      {/* min-w-0 lets the labels shrink, so four steps fit the card */}
+      <ol className="mb-6 flex items-center gap-1.5 text-xs">
         {STEPS.map((label, i) => (
-          <li key={label} className="flex flex-1 items-center gap-2">
+          <li key={label} className={cn("flex min-w-0 items-center gap-1.5", i < STEPS.length - 1 && "flex-1")}>
             <span
               className={cn(
                 "flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-semibold",
@@ -190,7 +204,7 @@ export function RegisterBusinessForm() {
               {i < step ? <Icon name="check" className="h-3.5 w-3.5" /> : i + 1}
             </span>
             <span className={cn("truncate", i === step ? "font-medium" : "text-muted")}>{label}</span>
-            {i < STEPS.length - 1 && <span className="h-px flex-1 bg-line" />}
+            {i < STEPS.length - 1 && <span className="h-px min-w-2 flex-1 bg-line" />}
           </li>
         ))}
       </ol>
@@ -273,7 +287,7 @@ export function RegisterBusinessForm() {
               </button>
             ))}
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="flex flex-col gap-2.5">
             {choices.map((p) => {
               const on = p.id === plan?.id;
               return (
@@ -282,23 +296,56 @@ export function RegisterBusinessForm() {
                   type="button"
                   aria-pressed={on}
                   onClick={() => setPlanId(p.id)}
-                  className={cn("flex flex-col rounded-xl border p-3.5 text-left transition-colors", on ? "border-brand-500 bg-brand-50/60 ring-1 ring-brand-500/30 dark:bg-brand-900/30" : "border-line hover:bg-surface")}
+                  className={cn(
+                    "flex items-start gap-3 rounded-xl border p-3.5 text-left transition-colors",
+                    on ? "border-brand-500 bg-brand-50/60 ring-1 ring-brand-500/30 dark:bg-brand-900/30" : "border-line hover:bg-surface",
+                  )}
                 >
-                  <span className="flex items-center justify-between gap-2 font-medium">
-                    {p.name}
-                    {p.highlighted && <Badge tone="blue">Popular</Badge>}
+                  <span className={cn("mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border", on ? "border-brand-500" : "border-zinc-300")}>
+                    {on && <span className="h-2 w-2 rounded-full bg-brand-500" />}
                   </span>
-                  <span className="mt-1 text-lg font-semibold tabular-nums">
-                    {USD.format(planPrice(p, cycle))}
-                    <span className="text-xs font-normal text-muted"> / {cycle === "Monthly" ? "month" : "year"}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-2 font-medium">
+                      {p.name}
+                      {p.highlighted && <Badge tone="blue">Popular</Badge>}
+                    </span>
+                    <span className="mt-0.5 block text-xs text-muted">{p.description}</span>
+                    <span className="mt-1 block text-xs text-muted">
+                      {limitLabel(p.locations)} location{p.locations === 1 ? "" : "s"} · {limitLabel(p.users)} users · {p.features.length} add-ons
+                    </span>
                   </span>
-                  <span className="mt-1 text-xs text-muted">{p.description}</span>
-                  <span className="mt-2 text-xs text-muted">
-                    {limitLabel(p.locations)} location{p.locations === 1 ? "" : "s"} · {limitLabel(p.users)} users · {p.features.length} add-ons
+                  <span className="shrink-0 text-right">
+                    <span className="block text-base font-semibold tabular-nums">{USD.format(planPrice(p, cycle))}</span>
+                    <span className="block text-xs text-muted">/ {cycle === "Monthly" ? "month" : "year"}</span>
                   </span>
                 </button>
               );
             })}
+          </div>
+          {errors.plan && <p className="text-xs text-red-600">{errors.plan}</p>}
+        </div>
+      )}
+
+      {step === 3 && plan && (
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-line px-4 py-3 text-[13px]">
+            <span>
+              <span className="block font-medium">
+                {plan.name} plan · {cycle}
+              </span>
+              <span className="block text-xs text-muted">
+                {limitLabel(plan.locations)} location{plan.locations === 1 ? "" : "s"} · {limitLabel(plan.users)} users · {plan.features.length} add-ons
+              </span>
+            </span>
+            <span className="flex items-center gap-3">
+              <span className="text-right">
+                <span className="block font-semibold tabular-nums">{USD.format(planPrice(plan, cycle))}</span>
+                <span className="block text-xs text-muted">/ {cycle === "Monthly" ? "month" : "year"}</span>
+              </span>
+              <button type="button" onClick={() => setStep(2)} className="rounded-md border border-line px-2 py-1 text-xs font-medium hover:bg-surface">
+                Change
+              </button>
+            </span>
           </div>
           <Field label="Pay by">
             <Select label="Pay by" value={method} onChange={(v) => setMethod(v as PayMethod)}>
@@ -307,11 +354,31 @@ export function RegisterBusinessForm() {
               ))}
             </Select>
           </Field>
+          {method === "Card" ? (
+            <CardFields
+              value={card}
+              onChange={(v) => {
+                setCard(v);
+                setCardErrors({});
+              }}
+              errors={cardErrors}
+            />
+          ) : (
+            <div className="rounded-xl border border-line p-4 text-[13px]">
+              <p className="flex items-center gap-2 font-medium">
+                <Icon name={method === "Cash" ? "dollar" : "building"} className="h-4 w-4 text-brand-500" />
+                {method === "Cash" ? "Paying in cash" : "Paying by bank transfer"}
+              </p>
+              <p className="mt-1.5 whitespace-pre-line text-muted">{method === "Cash" ? settings.cashInstructions : settings.bankDetails}</p>
+              <p className="mt-2 text-xs text-muted">You get an invoice when each period starts; the account keeps working while it&apos;s paid within {settings.graceDays} days.</p>
+            </div>
+          )}
           {plan && (
             <p className="rounded-lg bg-surface px-4 py-3 text-[13px]">
               {plan.trialDays ? (
                 <>
-                  <b>Free for {plan.trialDays} days.</b> Then {USD.format(planPrice(plan, cycle))} on {fmtDate(dayFrom(plan.trialDays))}, every {cycle === "Monthly" ? "month" : "year"}. Cancel any time.
+                  <b>Free for {plan.trialDays} days.</b> Then {USD.format(planPrice(plan, cycle))} on {fmtDate(dayFrom(plan.trialDays))}
+                  {method === "Card" ? " charged to your card" : ` by ${method.toLowerCase()} invoice`}, every {cycle === "Monthly" ? "month" : "year"}. Cancel any time.
                 </>
               ) : (
                 <>
@@ -340,7 +407,7 @@ export function RegisterBusinessForm() {
             I already have an account
           </Link>
         )}
-        {step < 2 ? (
+        {step < LAST ? (
           <Button type="button" variant="brand" onClick={() => check(step) && setStep(step + 1)}>
             Continue
           </Button>
@@ -360,7 +427,7 @@ function Shell({ children }: { children: ReactNode }) {
       <div className="mb-6 flex flex-col items-center text-center">
         <Logo size="md" className="mb-4" />
         <h1 className="text-lg font-semibold tracking-tight">Register your business</h1>
-        <p className="mt-1 text-[13px] text-muted">Set up your shop in a minute. No card needed for the trial.</p>
+        <p className="mt-1 text-[13px] text-muted">Set up your shop in a minute. Nothing is charged until your free trial ends.</p>
       </div>
       {children}
     </div>

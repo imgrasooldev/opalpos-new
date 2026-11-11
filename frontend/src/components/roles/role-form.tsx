@@ -149,7 +149,7 @@ export function RoleForm({ role }: { role?: DemoRole }) {
           role="status"
           className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200"
         >
-          {editing ? "Changes look good" : "Looks good"} — {totals.selected} permissions
+          {editing ? "Changes look good" : "Looks good"}: {totals.selected} permissions
           selected. This is a demo screen, so nothing was sent to the server yet.
         </div>
       )}

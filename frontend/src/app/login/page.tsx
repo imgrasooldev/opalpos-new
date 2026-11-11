@@ -12,7 +12,7 @@ export default function LoginPage() {
   return (
     <AuthLayout
       title="Welcome back"
-      description="Sales, stock and customers — pick up where you left off"
+      description="Sales, stock and customers. Pick up where you left off"
     >
       <LoginForm />
 

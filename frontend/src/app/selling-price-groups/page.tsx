@@ -18,7 +18,7 @@ export default function SellingPriceGroupsPage() {
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Selling price groups</h1>
           <p className="mt-1 text-[13px] text-muted">
-            Different prices for different customers — like wholesale or VIP.
+            Different prices for different customers, like wholesale or VIP.
           </p>
         </div>
 

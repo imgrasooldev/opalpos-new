@@ -60,7 +60,7 @@ const counts = (values: (string | null)[]) =>
     </span>
   ));
 
-const dash = <span className="text-muted">—</span>;
+const dash = <span className="text-muted">-</span>;
 
 const COLUMNS: DataColumn<SaleRow>[] = [
   {
@@ -232,7 +232,7 @@ export function CustomerSalesTab({
               onChange={(event) => event.target.value && setFrom(event.target.value)}
               className="rounded-lg border border-line bg-background px-3 py-1.5 text-[13px] outline-none focus:border-brand-500"
             />
-            <span className="text-muted">–</span>
+            <span className="text-muted">-</span>
             <input
               type="date"
               aria-label="To"

@@ -41,7 +41,7 @@ import { cn } from "@/lib/cn";
 
 const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const qty = (n: number, unit: string) => `${n.toFixed(2)} ${unit}`;
-const dash = <span className="text-muted">—</span>;
+const dash = <span className="text-muted">-</span>;
 
 type Tab = "all" | "inactive" | "stock";
 

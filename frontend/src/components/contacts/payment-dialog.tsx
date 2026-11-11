@@ -173,7 +173,7 @@ export function PaymentDialog({
           <div className="overflow-hidden rounded-xl border border-line">
             <div className="flex items-center justify-between gap-3 bg-surface px-4 py-2.5">
               <p className="text-[13px] font-semibold">Cash denominations</p>
-              <p className="text-xs text-muted">Optional — count the notes you received</p>
+              <p className="text-xs text-muted">Optional: count the notes you received</p>
             </div>
             <table className="w-full text-[13px]">
               <thead>

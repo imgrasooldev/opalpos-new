@@ -48,7 +48,7 @@ export function ViewProductDialog({ product, onClose }: { product: DemoProduct; 
           adjusted: product.adjusted,
         },
       ];
-  const margin = (p: number, s: number) => (p > 0 ? NUMBER.format((s / p - 1) * 100) : "—");
+  const margin = (p: number, s: number) => (p > 0 ? NUMBER.format((s / p - 1) * 100) : "-");
   const locations = product.locations.length
     ? product.locations.map((l) => `${l} (${LOCATION_CODES[l]})`).join(", ")
     : "None";
@@ -198,7 +198,7 @@ export function ViewProductDialog({ product, onClose }: { product: DemoProduct; 
   );
 }
 
-const dash = <span className="text-muted">—</span>;
+const dash = <span className="text-muted">-</span>;
 
 function Facts({ items }: { items: [string, React.ReactNode][] }) {
   return (
@@ -206,7 +206,7 @@ function Facts({ items }: { items: [string, React.ReactNode][] }) {
       {items.map(([label, value]) => (
         <div key={label} className="flex flex-wrap gap-x-2">
           <dt className="font-medium">{label}:</dt>
-          <dd className="text-muted">{value ?? "—"}</dd>
+          <dd className="text-muted">{value ?? "-"}</dd>
         </div>
       ))}
     </dl>

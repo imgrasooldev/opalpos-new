@@ -110,7 +110,7 @@ export default async function ViewUserPage({
                 {viewed.username ? (
                   <span className="font-mono text-[13px]">{viewed.username}</span>
                 ) : (
-                  <span className="text-muted">No web login — uses the POS PIN</span>
+                  <span className="text-muted">No web login, uses the POS PIN</span>
                 )}
               </Row>
               <Row label="Access locations">

@@ -58,7 +58,7 @@ export function UnitsScreen() {
     <>
       <DataTable
         title="All your units"
-        subtitle="How products are counted — pieces, boxes, kilograms…"
+        subtitle="How products are counted: pieces, boxes, kilograms…"
         rows={units}
         columns={columns}
         rowKey={(u) => u.id}
@@ -227,8 +227,8 @@ export function UnitDialog({
             onChange={(event) => setAllowDecimal(event.target.value === "yes")}
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25 dark:border-navy-700 dark:bg-navy-900"
           >
-            <option value="no">No — whole numbers only (e.g. pieces)</option>
-            <option value="yes">Yes — fractions allowed (e.g. 1.5 kg)</option>
+            <option value="no">No, whole numbers only (e.g. pieces)</option>
+            <option value="yes">Yes, fractions allowed (e.g. 1.5 kg)</option>
           </select>
         </label>
       </div>

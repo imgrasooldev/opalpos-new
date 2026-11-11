@@ -115,10 +115,10 @@ export function ReturnPaymentsDialog({
                 <td className="px-3 py-2">
                   {day(p.date)} <span className="text-muted">{time(p.date)}</span>
                 </td>
-                <td className="px-3 py-2 font-mono text-xs">{p.ref ?? "—"}</td>
+                <td className="px-3 py-2 font-mono text-xs">{p.ref ?? "-"}</td>
                 <td className="px-3 py-2 text-right font-medium tabular-nums">{USD.format(p.amount)}</td>
                 <td className="px-3 py-2">{p.method}</td>
-                <td className="px-3 py-2 text-muted">{p.note || "—"}</td>
+                <td className="px-3 py-2 text-muted">{p.note || "-"}</td>
                 <td className="px-3 py-2 text-right">
                   <button
                     type="button"

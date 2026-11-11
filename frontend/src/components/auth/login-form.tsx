@@ -15,8 +15,7 @@ import { useState, type FormEvent } from "react";
 
 import { Logo } from "@/components/brand/logo";
 import { signInAsBusiness } from "@/components/platform/business-access";
-import { businessStatus, useBusinesses, useInvoices, usePlatformSettings, useSubscriptions } from "@/components/platform/platform-data";
-import { Badge } from "@/components/ui/badge";
+import { useBusinesses, usePlatformSettings } from "@/components/platform/platform-data";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ErrorState } from "@/components/ui/feedback";
@@ -25,17 +24,12 @@ import { Input } from "@/components/ui/input";
 import { ApiError } from "@/lib/api";
 import { useLogin } from "@/hooks/use-auth";
 
-/** Password the demo accounts list fills in (any 8+ characters work). */
+/** Password the demo guide suggests (any 8+ characters work). */
 export const DEMO_PASSWORD = "demo1234";
-
-/** Demo shops worth trying, one per subscription situation. */
-const DEMO_USERNAMES = ["glassgalaxy", "vaporpoint", "austinglass", "smokehut", "lonestar", "desertsmoke", "greenleaf"];
 
 export function LoginForm() {
   const router = useRouter();
   const businesses = useBusinesses();
-  const subs = useSubscriptions();
-  const invoices = useInvoices();
   const settings = usePlatformSettings();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,8 +57,6 @@ export function LoginForm() {
     setDemoError("");
     login.mutate({ email, password, remember });
   }
-
-  const demos = DEMO_USERNAMES.map((u) => businesses.find((b) => b.username === u)).filter((b) => b !== undefined);
 
   return (
     <div className="flex flex-col gap-5">
@@ -138,44 +130,6 @@ export function LoginForm() {
             </Link>
           </p>
         )}
-      </div>
-
-      <div className="rounded-2xl border border-dashed border-line bg-background/60 p-4 text-[13px]">
-        <p className="flex items-center gap-2 font-medium">
-          <Icon name="info" className="h-4 w-4 text-brand-500" />
-          Demo shops <span className="font-normal text-muted">· click one to fill in, password {DEMO_PASSWORD}</span>
-        </p>
-        <ul className="mt-2 grid gap-1">
-          {demos.map((b) => {
-            const sub = subs.find((s) => s.businessId === b.id);
-            const state = businessStatus(b, sub, invoices, settings).state;
-            return (
-              <li key={b.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail(b.username);
-                    setPassword(DEMO_PASSWORD);
-                    setDemoError("");
-                  }}
-                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-surface"
-                >
-                  <span className="font-mono text-xs">{b.username}</span>
-                  <span className="truncate text-muted">{b.name}</span>
-                  <span className="ml-auto">
-                    <Badge tone={state === "Active" ? "green" : state === "Trial" ? "blue" : state === "Past due" ? "amber" : state === "Suspended" ? "rose" : "neutral"}>{state}</Badge>
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-        <p className="mt-2 text-xs text-muted">
-          Opal team?{" "}
-          <Link href="/platform/login" className="font-medium text-brand-500 hover:underline">
-            Platform admin sign-in
-          </Link>
-        </p>
       </div>
     </div>
   );

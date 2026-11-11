@@ -108,7 +108,7 @@ export function TransfersScreen() {
       label: "Additional notes",
       sortValue: (t) => t.notes,
       text: (t) => t.notes,
-      render: (t) => (t.notes ? <span className="block max-w-60 truncate" title={t.notes}>{t.notes}</span> : <span className="text-muted">—</span>),
+      render: (t) => (t.notes ? <span className="block max-w-60 truncate" title={t.notes}>{t.notes}</span> : <span className="text-muted">-</span>),
     },
   ];
 
@@ -274,7 +274,7 @@ function ViewDialog({ transfer: t, autoPrint, onClose }: { transfer: StockTransf
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <p className="text-[13px]">
-          <span className="text-muted">Additional notes:</span> {t.notes || "—"}
+          <span className="text-muted">Additional notes:</span> {t.notes || "-"}
         </p>
         <dl className="grid grid-cols-2 gap-y-1 text-[13px]">
           <dt className="text-muted">Net total amount:</dt>

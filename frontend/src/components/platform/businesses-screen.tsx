@@ -138,7 +138,7 @@ export function BusinessesScreen({ initialState }: { initialState?: string }) {
             </span>
           </span>
         ) : (
-          <span className="text-muted">—</span>
+          <span className="text-muted">-</span>
         ),
     },
     {
@@ -168,7 +168,7 @@ export function BusinessesScreen({ initialState }: { initialState?: string }) {
         ) : b.sub ? (
           <span className="text-xs text-muted">Ends {fmtDate(b.sub.periodEnd)}</span>
         ) : (
-          <span className="text-muted">—</span>
+          <span className="text-muted">-</span>
         ),
     },
     {
