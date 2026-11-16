@@ -1,5 +1,11 @@
+"use client";
+
 import { DonutChart } from "@/components/charts/donut-chart";
-import { REVENUE_BREAKDOWN } from "@/components/dashboard/dashboard-data";
+import {
+  REVENUE_BY_RANGE,
+  type DashboardRange,
+} from "@/components/dashboard/dashboard-data";
+import { RangeMenu } from "@/components/dashboard/range-menu";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 
@@ -8,30 +14,31 @@ const CURRENCY = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-export function RevenueBreakdown() {
+export function RevenueBreakdown({
+  range,
+  onRangeChange,
+}: {
+  range: DashboardRange;
+  onRangeChange: (range: DashboardRange) => void;
+}) {
+  const segments = REVENUE_BY_RANGE[range];
+  const sales = segments.find((s) => s.label === "Sales")!.value;
+
   return (
     <Card
       title="Revenue breakdown"
-      action={
-        <button
-          type="button"
-          className="flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-xs text-muted transition-colors hover:bg-surface"
-        >
-          Last 30 days
-          <Icon name="chevron-down" className="h-3.5 w-3.5" />
-        </button>
-      }
+      action={<RangeMenu value={range} onChange={onRangeChange} size="sm" />}
     >
       <div className="flex flex-wrap items-center gap-6">
         <DonutChart
-          segments={REVENUE_BREAKDOWN}
-          centerValue={CURRENCY.format(24580)}
-          centerLabel="Total"
+          segments={segments}
+          centerValue={CURRENCY.format(sales)}
+          centerLabel="Total sales"
         />
 
-        {/* legend har segment ka naam + value + share likhti hai, sirf rang nahi */}
+        {/* the legend names every segment with its value and share, not just a color */}
         <ul className="flex min-w-40 flex-1 flex-col">
-          {REVENUE_BREAKDOWN.map((segment) => (
+          {segments.map((segment) => (
             <li key={segment.label} className="flex items-center gap-2.5 py-1.5">
               <span
                 aria-hidden

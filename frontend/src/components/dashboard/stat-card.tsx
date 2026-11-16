@@ -16,7 +16,14 @@ const DELTAS: Record<Stat["delta"]["direction"], string> = {
   flat: "text-muted",
 };
 
-export function StatCard({ stat }: { stat: Stat }) {
+export function StatCard({
+  stat,
+  compare = "vs previous 30 days",
+}: {
+  stat: Stat;
+  /** Period the delta is measured against. */
+  compare?: string;
+}) {
   const { delta } = stat;
 
   return (
@@ -45,7 +52,7 @@ export function StatCard({ stat }: { stat: Stat }) {
             {delta.direction === "flat" && <span aria-hidden>-</span>}
             {delta.value}
           </span>
-          <span className="text-muted">vs previous 30 days</span>
+          <span className="text-muted">{compare}</span>
         </p>
       </div>
     </div>

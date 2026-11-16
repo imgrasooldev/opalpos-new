@@ -32,6 +32,8 @@ type Props = {
   tickEvery?: number;
   /** SVG gradient ids global hote hain — ek page par do chart ho to badal do. */
   id?: string;
+  /** Accessible name for the chart. */
+  label?: string;
   className?: string;
 };
 
@@ -41,6 +43,7 @@ export function LineChart({
   formatTick,
   tickEvery = 2,
   id = "trend",
+  label = "Sales over the last 30 days",
   className,
 }: Props) {
   const max = Math.max(...ticks);
@@ -62,7 +65,7 @@ export function LineChart({
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       className={cn("h-56 w-full", className)}
       role="img"
-      aria-label="Sales over the last 30 days"
+      aria-label={label}
     >
       <defs>
         <linearGradient id={`${id}-area`} x1="0" y1="0" x2="0" y2="1">
